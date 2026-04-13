@@ -2,7 +2,7 @@
 <div id="overlay" class="overlay"><div class="overlay-box" id="overlay-msg">Memuat data...</div></div>
 <div id="save-status"></div>
 <div class="cover"><div class="badge">Laporan Keuangan</div><h1 id="cover-kelompok">Kelompok</h1><div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:3px"><button onclick="gantiPeriode(-1)" style="background:none;border:none;color:var(--emas2);font-size:1.4rem;cursor:pointer;padding:0 4px">&#8249;</button><h2 id="cover-periode" style="margin:0">Desember 2025</h2><button onclick="gantiPeriode(1)" style="background:none;border:none;color:var(--emas2);font-size:1.4rem;cursor:pointer;padding:0 4px">&#8250;</button></div><p>Data Jamaah &amp; Kas Kelompok</p></div>
-<div class="toolbar"><span style="flex:1"></span><button class="btn btn-p" onclick="downloadExcel()">Download Excel</button><button class="btn btn-p" onclick="simpanSemua()">Simpan Semua</button><button class="btn btn-r" onclick="resetAll()">Reset</button></div>
+<div class="toolbar"><span style="flex:1"></span><button class="btn btn-p" onclick="downloadExcel()">Download Excel</button><button class="btn btn-p" onclick="downloadLaporanKas()" style="background:var(--hijau2)">Download Laporan Kas Ke Daerah</button><button class="btn btn-p" onclick="simpanSemua()">Simpan Semua</button><button class="btn btn-r" onclick="resetAll()">Reset</button></div>
 <div class="tabs"><button class="tab on" onclick="showTab('data',this)">Data Jamaah</button><button class="tab" onclick="showTab('kas',this)">Buku Kas</button><button class="tab" onclick="showTab('lapkas',this)">Laporan Kas</button><button class="tab" onclick="showTab('setting',this)">Setting</button><button class="tab" onclick="showTab('kelas',this)">Kelas</button></div>
 <div id="p-data" class="panel on"><div class="ptitle">Data Semua Jamaah</div><div class="psub" id="sub-data">-</div><div class="divider"></div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"><button class="btn btn-p" onclick="tambahKK()" style="background:var(--hijau2)">+ Tambah KK</button><button class="btn btn-p" onclick="tambahAnggota()">+ Tambah Anggota</button><span style="font-size:11px;color:#888">Klik kanan baris untuk hapus</span></div><div class="tbl-dj"><table id="t1"><thead><tr><th>SETOR</th><th>SISA</th><th>NO</th><th>KK</th><th>Anggota</th><th style="min-width:100px;text-align:left">NAMA</th><th>IR</th><th>SUDR</th><th>YPK</th><th>DONATUR PNS</th><th>JATAH DESA</th><th>SUDS</th><th>SATPAM PONDOK</th><th>ASAD</th><th>TANAH /KK 19K</th><th>DAPUR</th><th>SDQ REMAJA</th><th>BATA MERAH</th><th>STIA</th><th>RT</th><th>TK</th><th>SYM</th><th>YTM</th><th>OR</th><th>DANA SEHAT</th><th>TPK</th><th>FR</th><th>SHODAQOH</th><th>INFAQ</th><th>JUMLAH</th></tr></thead><tbody id="b1"></tbody></table></div></div>
 <div id="p-kas" class="panel"><div class="ptitle">Buku Kas Kelompok</div><div class="psub" id="sub-kas">-</div><div class="divider"></div><div class="tbl-wrap"><table id="t2"><thead><tr><th style="width:70px">Tgl</th><th style="text-align:left;min-width:200px">Keterangan</th><th style="width:55px">Code</th><th style="width:110px">Debet</th><th style="width:110px">Kredit</th><th style="width:120px">Saldo</th></tr></thead><tbody id="b2"></tbody></table></div></div>
@@ -285,8 +285,10 @@ async function saveLaporanKas(){
 }
 async function saveSaldoAwal(){
   const kas=getNum(document.getElementById('k6saldo')), lap=getNum(document.getElementById('l3sAwal'));
+  const kasAkhir=num((document.getElementById('ks-akhir')||{textContent:'0'}).textContent);
+  const lapAkhir=num((document.getElementById('l3sAkh')||{textContent:'0'}).textContent);
   try {
-    await sbUpsert('saldo_awal',[{kelompok:CFG.kelompok,periode:getPeriode(),saldo_kas:kas,saldo_lap:lap,updated_at:new Date().toISOString()}]);
+    await sbUpsert('saldo_awal',[{kelompok:CFG.kelompok,periode:getPeriode(),saldo_kas:kas,saldo_lap:lap,saldo_kas_akhir:kasAkhir,saldo_lap_akhir:lapAkhir,updated_at:new Date().toISOString()}]);
   } catch(e){ showStatus('Error simpan saldo: '+e.message,'#c0392b'); }
 }
 async function _simpanKeSupabase(periode){
@@ -337,11 +339,24 @@ async function _fetchPeriode(periode, saldoAkhirKas=0, saldoAkhirLap=0){
     }
   }
 
-  // Kalau saldo awal belum ada, isi dari saldo akhir periode sebelumnya
+  // Kalau saldo awal belum ada, ambil dari saldo_awal periode sebelumnya di Supabase
   let saData = sa;
-  if(!sa.length && (saldoAkhirKas||saldoAkhirLap)){
-    saData=[{saldo_kas:saldoAkhirKas,saldo_lap:saldoAkhirLap}];
-    await sbUpsert('saldo_awal',[{kelompok:klp,periode,saldo_kas:saldoAkhirKas,saldo_lap:saldoAkhirLap,updated_at:new Date().toISOString()}]);
+  if(!sa.length){
+    // Hitung periode sebelumnya
+    const bulanList=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const parts=periode.split(' '); const bIdx=bulanList.indexOf(parts[0]); const thn=parseInt(parts[1]);
+    const prevB=bIdx===0?11:bIdx-1; const prevT=bIdx===0?thn-1:thn;
+    const prevPeriode=bulanList[prevB]+' '+prevT;
+    // Coba ambil saldo akhir dari cache atau Supabase periode sebelumnya
+    let saldoKas=saldoAkhirKas, saldoLap=saldoAkhirLap;
+    if(!saldoKas && !saldoLap){
+      const prevSa=await sbSelect('saldo_awal','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(prevPeriode));
+      if(prevSa.length){ saldoKas=prevSa[0].saldo_kas_akhir||prevSa[0].saldo_kas||0; saldoLap=prevSa[0].saldo_lap_akhir||prevSa[0].saldo_lap||0; }
+    }
+    if(saldoKas||saldoLap){
+      saData=[{saldo_kas:saldoKas,saldo_lap:saldoLap}];
+      await sbUpsert('saldo_awal',[{kelompok:klp,periode,saldo_kas:saldoKas,saldo_lap:saldoLap,updated_at:new Date().toISOString()}]);
+    }
   }
 
   _cache[periode]={ dj:djData, bk, lk, sa:saData };
@@ -573,6 +588,112 @@ function downloadExcel(){
   XLSX.utils.book_append_sheet(wb,sheetDariTabel('t2',[],['KELOMPOK '+klp.toUpperCase(),'BUKU KAS',per.toUpperCase()]),'Buku Kas');
   XLSX.utils.book_append_sheet(wb,sheetDariTabel('t3',[],['KELOMPOK '+klp.toUpperCase(),'LAPORAN KAS',per.toUpperCase()]),'Laporan Kas');
   XLSX.writeFile(wb,`Laporan_${klp}_${per.replace(' ','_')}.xlsx`);
+}
+
+function downloadLaporanKas(){
+  const klp=CFG.kelompok||'Kelompok', per=getPeriode();
+  const wb=XLSX.utils.book_new();
+  const B={top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}};
+  const FMT='"Rp "#,##0';
+  const sN={font:{sz:10},border:B,alignment:{vertical:'center'}};
+  const sNR={font:{sz:10},border:B,alignment:{vertical:'center',horizontal:'right'},numFmt:FMT};
+  const sB={font:{sz:10,bold:true},border:B,alignment:{vertical:'center'}};
+  const sBR={font:{sz:10,bold:true},border:B,alignment:{vertical:'center',horizontal:'right'},numFmt:FMT};
+  const sH={font:{sz:10,bold:true},border:B,alignment:{vertical:'center',horizontal:'center'}};
+  const sT={font:{sz:12,bold:true},alignment:{horizontal:'center',vertical:'center'}};
+  const sE={border:B,alignment:{vertical:'center'}};
+
+  // Ambil nilai dari DOM buku kas
+  function kre(id){ const td=document.getElementById('k'+id)?.querySelectorAll('td')[4]; return td?.dataset?.precise!==undefined?parseFloat(td.dataset.precise)||0:getNum(td); }
+  function deb(id){ return getNum(document.getElementById('k'+id)?.querySelectorAll('td')[3]); }
+  function tgl(id){ return getText(document.getElementById('k'+id)?.querySelectorAll('td')[0])||''; }
+  function cod(id){ return getText(document.getElementById('k'+id)?.querySelectorAll('td')[2])||''; }
+  const sAwal=getNum(document.getElementById('k6saldo'));
+
+  const wrLabel=document.getElementById('lbl-wr')?.textContent?.trim()||'Warisan Rod';
+
+  // Nilai dari formula refs buku kas
+
+
+  const aoa=[], styles=[], merges=[];
+
+  // Judul
+  const r0=['','KELOMPOK '+klp.toUpperCase(),'','','','']; aoa.push(r0); styles.push(r0.map((_,i)=>i===1?{...sT}:sE)); merges.push({s:{r:0,c:1},e:{r:0,c:5}});
+  const r1=['','LAPORAN KAS','','','','']; aoa.push(r1); styles.push(r1.map((_,i)=>i===1?{...sT}:sE)); merges.push({s:{r:1,c:1},e:{r:1,c:5}});
+  const r2=['','Periode: '+per,'','','','']; aoa.push(r2); styles.push(r2.map((_,i)=>i===1?{...sT,font:{sz:10}}:sE)); merges.push({s:{r:2,c:1},e:{r:2,c:5}});
+  aoa.push(Array(6).fill('')); styles.push(Array(6).fill(sE));
+
+  // Header
+  aoa.push(['Tgl','Keterangan','Code','Debet','Kredit','Saldo']); styles.push([sH,sH,sH,sH,sH,sH]);
+
+  // Saldo awal
+  aoa.push(['','Saldo bulan '+per.split(' ')[0].toLowerCase(),'','','',sAwal||'']);
+  styles.push([sN,sN,sN,sN,sN,sAwal?sNR:sN]);
+
+  // PENERIMAAN header
+  aoa.push(['','PENERIMAAN','','','','']); styles.push([sN,sB,sN,sN,sN,sN]);
+
+  // Baris penerimaan fixed sesuai format laporan
+  const frVal=kre(23), shodVal=getNum(document.getElementById('k24')?.querySelectorAll('td')[4]);
+  const infVal=kre(25), infJumVal=kre(27);
+  // INF Desa = jatdes total dari data jamaah (kolom jY di footer)
+  const infDesaVal=num((document.getElementById('jY')||{textContent:'0'}).textContent);
+
+  const penBaris=[
+    {ket:'FR 100%',val:frVal},
+    {ket:'Shodaqoh 100%',val:shodVal},
+    {ket:'Infaq',val:infVal},
+    {ket:"INF Jum'at",val:infJumVal},
+    {ket:'INF Desa',val:infDesaVal},
+  ];
+  penBaris.forEach(r=>{ aoa.push(['',r.ket,'',r.val||'','','']); styles.push([sN,sN,sN,r.val?sNR:sN,sN,sN]); });
+  // 7 baris kosong penerimaan
+  for(let i=0;i<7;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
+
+  // PENGELUARAN header
+  aoa.push(['','PENGELUARAN','','','','']); styles.push([sN,sB,sN,sN,sN,sN]);
+
+  const infRomVal=kre(26), infLailVal=kre(28), infHariVal=kre(29);
+  const warisVal=kre(30), zakatVal=kre(31);
+  const opsVal=getNum(document.getElementById('k32')?.querySelectorAll('td')[4]);
+
+  // FR 100%, SHODAQOH, INFAQ
+  aoa.push(['','FR 100%','','',frVal||'','']); styles.push([sN,sN,sN,sN,frVal?sNR:sN,sN]);
+  aoa.push(['','SHODAQOH','','',shodVal||'','']); styles.push([sN,sN,sN,sN,shodVal?sNR:sN,sN]);
+  aoa.push(['','INFAQ','','',infVal||'','']); styles.push([sN,sN,sN,sN,infVal?sNR:sN,sN]);
+  // 1 baris kosong
+  aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]);
+  // INF JUM'AT 2/3
+  aoa.push(['',"INF JUM'AT 2/3",'','',infJumVal||'','']); styles.push([sN,sN,sN,sN,infJumVal?sNR:sN,sN]);
+  // 2 baris kosong
+  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
+  // operasional
+  aoa.push(['','operasional','','',opsVal||'','']); styles.push([sN,sN,sN,sN,opsVal?sNR:sN,sN]);
+  // 2 baris kosong
+  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
+
+  // Hitung total
+  let totD=penBaris.reduce((s,r)=>s+r.val,0);
+  let totK=frVal+shodVal+infVal+infJumVal+opsVal;
+  const saldoBulan=totD-totK;
+  const saldoAkhir=sAwal+saldoBulan;
+
+  aoa.push(['','JUMLAH','',totD||'',totK||'','']); styles.push([sN,sB,sN,totD?sBR:sB,totK?sBR:sB,sN]);
+  aoa.push(['','SALDO BULAN','','','',saldoBulan]); styles.push([sN,sB,sN,sN,sN,sBR]);
+  aoa.push(['','SALDO AKHIR','','','',saldoAkhir]); styles.push([sN,sB,sN,sN,sN,sBR]);
+
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  if(merges.length) ws['!merges']=merges;
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+  for(let R=range.s.r;R<=range.e.r;R++) for(let C=range.s.c;C<=range.e.c;C++){
+    const addr=XLSX.utils.encode_cell({r:R,c:C});
+    if(!ws[addr]) ws[addr]={t:'z',v:''};
+    ws[addr].s=(styles[R]&&styles[R][C])||sE;
+  }
+  ws['!cols']=[{wch:8},{wch:28},{wch:8},{wch:16},{wch:16},{wch:16}];
+  ws['!rows']=aoa.map((_,i)=>i<4?{hpt:16}:{hpt:18});
+  XLSX.utils.book_append_sheet(wb,ws,'Laporan Kas');
+  XLSX.writeFile(wb,`LaporanKas_${klp}_${per.replace(' ','_')}.xlsx`);
 }
 
 init();

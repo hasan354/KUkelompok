@@ -320,13 +320,31 @@ async function _fetchPeriode(periode, saldoAkhirKas=0, saldoAkhirLap=0){
     sbSelect('laporan_kas','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode)+'&order=baris.asc'),
     sbSelect('saldo_awal','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode))
   ]);
+
+  // Kalau data jamaah kosong, copy struktur dari periode manapun yang ada (nama & KK, nilai = 0)
+  let djData = dj;
+  if(!dj.length){
+    const djLama = await sbSelect('data_jamaah','kelompok=eq.'+encodeURIComponent(klp)+'&order=baris.asc&limit=200');
+    // Ambil periode terbaru yang ada
+    if(djLama.length){
+      // Cari periode terbaru
+      const periodeAda = [...new Set(djLama.map(r=>r.periode))];
+      // Ambil baris unik per baris (ambil dari periode pertama yang ditemukan)
+      const seen = new Set();
+      djData = djLama
+        .filter(r=>{ if(seen.has(r.baris)) return false; seen.add(r.baris); return true; })
+        .map(r=>({ ...r, periode, setor:0, ir:0, sudr:0, ypk:0, donpns:0, jatdes:0, suds:0, satpam:0, asad:0, tanah:0, dapur:0, sdqremaja:0, bata:0, stia:0, rt:0, tk:0, sym:0, ytm:0, or_col:0, danasehat:0, tpk:0 }));
+    }
+  }
+
   // Kalau saldo awal belum ada, isi dari saldo akhir periode sebelumnya
   let saData = sa;
   if(!sa.length && (saldoAkhirKas||saldoAkhirLap)){
     saData=[{saldo_kas:saldoAkhirKas,saldo_lap:saldoAkhirLap}];
     await sbUpsert('saldo_awal',[{kelompok:klp,periode,saldo_kas:saldoAkhirKas,saldo_lap:saldoAkhirLap,updated_at:new Date().toISOString()}]);
   }
-  _cache[periode]={ dj, bk, lk, sa:saData };
+
+  _cache[periode]={ dj:djData, bk, lk, sa:saData };
   _renderDariCache(periode);
 }
 function _applyDJ(data){

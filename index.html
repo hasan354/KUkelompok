@@ -7,59 +7,42 @@
 <div id="p-data" class="panel on"><div class="ptitle">Data Semua Jamaah</div><div class="psub" id="sub-data">-</div><div class="divider"></div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"><button class="btn btn-p" onclick="tambahKK()" style="background:var(--hijau2)">+ Tambah KK</button><button class="btn btn-p" onclick="tambahAnggota()">+ Tambah Anggota</button><span style="font-size:11px;color:#888">Klik kanan baris untuk hapus</span></div><div class="tbl-dj"><table id="t1"><thead><tr><th>SETOR</th><th>SISA</th><th>NO</th><th>KK</th><th>Anggota</th><th style="min-width:100px;text-align:left">NAMA</th><th>IR</th><th>SUDR</th><th>YPK</th><th>DONATUR PNS</th><th>JATAH DESA</th><th>SUDS</th><th>SATPAM PONDOK</th><th>ASAD</th><th>TANAH /KK 19K</th><th>DAPUR</th><th>SDQ REMAJA</th><th>BATA MERAH</th><th>STIA</th><th>RT</th><th>TK</th><th>SYM</th><th>YTM</th><th>OR</th><th>DANA SEHAT</th><th>TPK</th><th>FR</th><th>SHODAQOH</th><th>INFAQ</th><th>JUMLAH</th></tr></thead><tbody id="b1"></tbody></table></div></div>
 <div id="p-kas" class="panel"><div class="ptitle">Buku Kas Kelompok</div><div class="psub" id="sub-kas">-</div><div class="divider"></div><div class="tbl-wrap"><table id="t2"><thead><tr><th style="width:70px">Tgl</th><th style="text-align:left;min-width:200px">Keterangan</th><th style="width:55px">Code</th><th style="width:110px">Debet</th><th style="width:110px">Kredit</th><th style="width:120px">Saldo</th></tr></thead><tbody id="b2"></tbody></table></div></div>
 <div id="p-lapkas" class="panel"><div class="ptitle">Laporan Kas Kelompok</div><div class="psub" id="sub-lapkas">-</div><div class="divider"></div><div class="tbl-wrap"><table id="t3"><thead><tr><th style="width:70px">Tgl</th><th style="text-align:left;min-width:200px">Keterangan</th><th style="width:55px">Code</th><th style="width:110px">Debet</th><th style="width:110px">Kredit</th><th style="width:120px">Saldo</th></tr></thead><tbody id="b3"></tbody></table></div></div>
-<div id="p-setting" class="panel"><div class="ptitle">Setting</div><div class="psub">Konfigurasi kelompok dan Google Apps Script</div><div class="divider"></div><div style="max-width:500px;display:flex;flex-direction:column;gap:14px"><div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:var(--hijau)">Info Kelompok</div><label style="font-size:12px;font-weight:600">Nama Kelompok<input id="cfg-kelompok" type="text" placeholder="Gumukrejo" style="display:block;width:100%;margin-top:4px;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit"></label><label style="font-size:12px;font-weight:600">Periode<select id="cfg-bulan" style="display:inline-block;margin-top:4px;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit;width:55%"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option selected>Desember</option></select><input id="cfg-tahun" type="number" value="2025" min="2020" max="2099" style="display:inline-block;margin-top:4px;margin-left:4px;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit;width:40%"></label></div><div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:var(--hijau)">Google Apps Script Web App URL</div><label style="font-size:12px;font-weight:600">URL<input id="cfg-url" type="text" placeholder="https://script.google.com/macros/s/..." style="display:block;width:100%;margin-top:4px;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:11.5px;font-family:monospace"></label></div><button onclick="simpanSetting()" class="btn btn-p" style="align-self:flex-start;padding:8px 24px">Simpan Setting</button><div id="cfg-status" style="font-size:12px;display:none"></div></div></div>
+<div id="p-setting" class="panel"><div class="ptitle">Setting</div><div class="psub">Konfigurasi kelompok</div><div class="divider"></div><div style="max-width:500px;display:flex;flex-direction:column;gap:14px"><div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:var(--hijau)">Info Kelompok</div><label style="font-size:12px;font-weight:600">Nama Kelompok<input id="cfg-kelompok" type="text" placeholder="Gumukrejo" style="display:block;width:100%;margin-top:4px;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit"></label><label style="font-size:12px;font-weight:600">Periode<select id="cfg-bulan" style="display:inline-block;margin-top:4px;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit;width:55%"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option selected>Desember</option></select><input id="cfg-tahun" type="number" value="2025" min="2020" max="2099" style="display:inline-block;margin-top:4px;margin-left:4px;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit;width:40%"></label></div><button onclick="simpanSetting()" class="btn btn-p" style="align-self:flex-start;padding:8px 24px">Simpan Setting</button><div id="cfg-status" style="font-size:12px;display:none"></div></div></div>
 <div id="p-kelas" class="panel"><div class="ptitle">Kelas Setoran</div><div class="psub">Buat kelas, tentukan nominal, lalu pilih anggota yang masuk kelas tersebut</div><div class="divider"></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><button class="btn btn-p" onclick="tambahKelas()" style="background:var(--hijau2)">+ Tambah Kelas</button><span id="kelas-status" style="font-size:12px;color:var(--hijau2);display:none"></span></div><div id="kelas-cards" style="display:flex;flex-direction:column;gap:16px"></div></div>
 <footer id="footer-text">Laporan Keuangan Kelompok</footer>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxwhD-7-u7rk1T0T3Uhzce7KizXHKikjYNvL02i3oG2Fdl5Fv3AaTxoFodAQu8woaiY/exec';
-let CFG = { kelompok: '', periode: 'Desember 2025' };
+// ── SUPABASE CONFIG ──────────────────────────────────────────────
+const SB_URL  = 'https://bxahsunggxtqqxunmnft.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4YWhzdW5nZ3h0cXF4dW5tbmZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDE2MTAsImV4cCI6MjA5MTYxNzYxMH0.XUk3Jqoym73i7JWCc1_zIzAiB9uQYyafqasl7wO-nRU';
+const SB_HDR  = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+
+async function sbSelect(table, query){
+  const url = SB_URL + '/rest/v1/' + table + '?' + query;
+  const r = await fetch(url, { headers: { ...SB_HDR, 'Prefer': 'return=representation' } });
+  const d = await r.json();
+  return Array.isArray(d) ? d : [];
+}
+async function sbUpsert(table, rows){
+  if(!rows.length) return;
+  await fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: { ...SB_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(rows)
+  });
+}
+async function sbDelete(table, filter){
+  const url = SB_URL + '/rest/v1/' + table + '?' + filter;
+  await fetch(url, { method: 'DELETE', headers: SB_HDR });
+}
+
+// ── CACHE & STATE ────────────────────────────────────────────────
+const _cache = {}; // { 'Januari 2026': { dj, bk, lk, sa } }
+let _dirty = false;
+let CFG = { kelompok: '' };
 let _pd = { b: 11, t: 2025 };
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 function getPeriode(){ return BULAN[_pd.b] + ' ' + _pd.t; }
-
-// Semua request pakai GET dengan payload di-encode
-async function api(params){
-  if(!GAS_URL) return { ok:false, error:'URL belum diset.' };
-  const payload = encodeURIComponent(JSON.stringify(params));
-  const res = await fetch(GAS_URL + '?payload=' + payload);
-  const text = await res.text();
-  try { return JSON.parse(text); } catch(e){ return { ok:false, error:text.substring(0,200) }; }
-}
-
-// Save dengan chunking otomatis — kirim 5 baris per request
-async function apiPost(body){
-  if(!GAS_URL) return { ok:false, error:'URL belum diset.' };
-  // Coba POST dulu, retry sekali jika gagal karena error sementara Google
-  for(let attempt=0; attempt<2; attempt++){
-    try {
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(body)
-      });
-      const text = await res.text();
-      try {
-        const r = JSON.parse(text);
-        // Jika error sementara Google, retry
-        if(!r.ok && r.error && r.error.includes('gagal') && attempt===0) continue;
-        return r;
-      } catch(e){ return { ok:false, error:text.substring(0,200) }; }
-    } catch(e){
-      if(attempt===0) continue; // retry sekali
-      // Fallback ke GET jika POST gagal (CORS)
-      try {
-        const payload = encodeURIComponent(JSON.stringify(body));
-        const res2 = await fetch(GAS_URL + '?payload=' + payload);
-        const text2 = await res2.text();
-        try { return JSON.parse(text2); } catch(e2){ return { ok:false, error:text2.substring(0,200) }; }
-      } catch(e2){
-        return { ok:false, error:'Fetch error: '+e2.message };
-      }
-    }
-  }
-  return { ok:false, error:'Gagal setelah retry' };
-}
 
 function fmt(n){ return isNaN(n)||n===0 ? '0' : Math.round(n).toLocaleString('id-ID'); }
 function num(s){ return parseFloat((s||'').toString().replace(/\./g,'').replace(',','.')) || 0; }
@@ -87,24 +70,25 @@ function updateLabels(){
   document.getElementById('footer-text').textContent='Laporan Keuangan Kelompok '+k+' — '+p;
 }
 async function gantiPeriode(arah){
-  showLoading('Menyimpan...');
-  await saveDataJamaah(); await saveBukuKas(); await saveLaporanKas(); await saveSaldoAwal();
-
-  // Ambil saldo akhir periode saat ini sebelum pindah
+  // Simpan cache periode saat ini sebelum pindah
+  _cacheFromDOM(getPeriode());
+  // Kalau ada perubahan, simpan ke Supabase di background
+  if(_dirty){ _dirty=false; _simpanKeSupabase(getPeriode()).catch(()=>{}); }
+  // Ambil saldo akhir sebelum pindah
   const saldoAkhirKas = num((document.getElementById('ks-akhir')||{textContent:'0'}).textContent);
   const saldoAkhirLap = num((document.getElementById('l3sAkh')||{textContent:'0'}).textContent);
-
   _pd.b+=arah; if(_pd.b>11){_pd.b=0;_pd.t++;} if(_pd.b<0){_pd.b=11;_pd.t--;}
   CFG.periode=getPeriode(); updateLabels();
-
-  // Cek apakah periode baru sudah punya saldo awal, kalau belum isi otomatis
-  const cek = await api({action:'load',sheet:'saldo_awal',kelompok:CFG.kelompok,periode:getPeriode()});
-  if(!cek.ok || !cek.data || !cek.data.length){
-    await apiPost({action:'save',sheet:'saldo_awal',kelompok:CFG.kelompok,periode:getPeriode(),
-      rows:[{kelompok:CFG.kelompok,periode:getPeriode(),saldo_kas:saldoAkhirKas,saldo_lap:saldoAkhirLap,updated_at:new Date().toISOString()}]});
+  const p=getPeriode();
+  if(_cache[p]){
+    // Sudah ada di cache, langsung render
+    _renderDariCache(p);
+  } else {
+    // Belum ada, fetch dari Supabase
+    showLoading('Memuat '+p+'...');
+    await _fetchPeriode(p, saldoAkhirKas, saldoAkhirLap);
+    hideLoading();
   }
-
-  loadAll();
 }
 
 const ctxMenu=document.createElement('div');
@@ -269,54 +253,116 @@ document.getElementById('t3').addEventListener('input',()=>{ recalc3(); debounce
 document.getElementById('b3').addEventListener('input',e=>{ if(e.target.closest('#l3sAwal')){ recalc3(); debounceSaveSaldo(); } });
 </script>
 <script>
-const debounceSave1=debounce(saveDataJamaah,1500);
-const debounceSave2=debounce(saveBukuKas,1500);
-const debounceSave3=debounce(saveLaporanKas,1500);
-const debounceSaveSaldo=debounce(saveSaldoAwal,1000);
+const debounceSave1=debounce(()=>{_dirty=true;saveDataJamaah();},1500);
+const debounceSave2=debounce(()=>{_dirty=true;saveBukuKas();},1500);
+const debounceSave3=debounce(()=>{_dirty=true;saveLaporanKas();},1500);
+const debounceSaveSaldo=debounce(()=>{_dirty=true;saveSaldoAwal();},1000);
 const debounceSaveKelas=debounce(()=>simpanKelas(),1500);
 
 async function saveDataJamaah(){
-  if(!GAS_URL){showStatus('URL belum diset','#c0392b');return;}
   const rows=[];
   b1.querySelectorAll('tr:not(.rt)').forEach((row,idx)=>{ const td=row.querySelectorAll('td'); const nama=getText(td[5]); if(!nama) return; rows.push({kelompok:CFG.kelompok,periode:getPeriode(),baris:idx+1,no:getText(td[2]),kk:td[3]?.dataset.checked==='1'?'1':'',nama,setor:getNum(td[0]),ir:getNum(td[6]),sudr:getNum(td[7]),ypk:getNum(td[8]),donpns:getNum(td[9]),jatdes:getNum(td[10]),suds:getNum(td[11]),satpam:getNum(td[12]),asad:getNum(td[13]),tanah:getNum(td[14]),dapur:getNum(td[15]),sdqremaja:getNum(td[16]),bata:getNum(td[17]),stia:getNum(td[18]),rt:getNum(td[19]),tk:getNum(td[20]),sym:getNum(td[21]),ytm:getNum(td[22]),or_col:getNum(td[23]),danasehat:getNum(td[24]),tpk:getNum(td[25]),updated_at:new Date().toISOString()}); });
-  const r=await apiPost({action:'save',sheet:'data_jamaah',kelompok:CFG.kelompok,periode:getPeriode(),rows});
-  if(!r.ok) showStatus('Error: '+r.error,'#c0392b');
+  try {
+    await sbDelete('data_jamaah','kelompok=eq.'+encodeURIComponent(CFG.kelompok)+'&periode=eq.'+encodeURIComponent(getPeriode()));
+    await sbUpsert('data_jamaah', rows);
+  } catch(e){ showStatus('Error simpan jamaah: '+e.message,'#c0392b'); }
 }
 async function saveBukuKas(){
-  if(!GAS_URL) return;
   const rows=[];
   b2.querySelectorAll('tr').forEach(row=>{ if(!row.id||!row.id.match(/^k\d+$/)) return; const baris=parseInt(row.id.replace('k','')); const tds=row.querySelectorAll('td'); if(tds.length<4) return; const kreTd=tds[4]; const kredit=kreTd?.querySelector('[contenteditable]')?getNum(kreTd):0; rows.push({kelompok:CFG.kelompok,periode:getPeriode(),baris,tgl:getText(tds[0]),keterangan:getText(tds[1]),code:getText(tds[2]),debet:getNum(tds[3]),kredit,updated_at:new Date().toISOString()}); });
-  const r=await apiPost({action:'save',sheet:'buku_kas',kelompok:CFG.kelompok,periode:getPeriode(),rows});
-  if(!r.ok) showStatus('Error: '+r.error,'#c0392b');
+  try {
+    await sbDelete('buku_kas','kelompok=eq.'+encodeURIComponent(CFG.kelompok)+'&periode=eq.'+encodeURIComponent(getPeriode()));
+    await sbUpsert('buku_kas', rows);
+  } catch(e){ showStatus('Error simpan kas: '+e.message,'#c0392b'); }
 }
 async function saveLaporanKas(){
-  if(!GAS_URL) return;
   const rows=[];
   b3.querySelectorAll('tr').forEach((row,idx)=>{ const tds=row.querySelectorAll('td'); if(tds.length<4) return; const debTd=tds[3],kreTd=tds[4]; const debet=debTd?.querySelector('[contenteditable]')?getNum(debTd):0; const kredit=kreTd?.querySelector('[contenteditable]')?getNum(kreTd):0; rows.push({kelompok:CFG.kelompok,periode:getPeriode(),baris:idx+1,tgl:getText(tds[0]),keterangan:getText(tds[1]),code:getText(tds[2]),debet,kredit,updated_at:new Date().toISOString()}); });
-  const r=await apiPost({action:'save',sheet:'laporan_kas',kelompok:CFG.kelompok,periode:getPeriode(),rows});
-  if(!r.ok) showStatus('Error: '+r.error,'#c0392b');
+  try {
+    await sbDelete('laporan_kas','kelompok=eq.'+encodeURIComponent(CFG.kelompok)+'&periode=eq.'+encodeURIComponent(getPeriode()));
+    await sbUpsert('laporan_kas', rows);
+  } catch(e){ showStatus('Error simpan laporan: '+e.message,'#c0392b'); }
 }
 async function saveSaldoAwal(){
-  if(!GAS_URL) return;
   const kas=getNum(document.getElementById('k6saldo')), lap=getNum(document.getElementById('l3sAwal'));
-  const r=await apiPost({action:'save',sheet:'saldo_awal',kelompok:CFG.kelompok,periode:getPeriode(),rows:[{kelompok:CFG.kelompok,periode:getPeriode(),saldo_kas:kas,saldo_lap:lap,updated_at:new Date().toISOString()}]});
-  if(!r.ok) showStatus('Error saldo: '+r.error,'#c0392b');
+  try {
+    await sbUpsert('saldo_awal',[{kelompok:CFG.kelompok,periode:getPeriode(),saldo_kas:kas,saldo_lap:lap,updated_at:new Date().toISOString()}]);
+  } catch(e){ showStatus('Error simpan saldo: '+e.message,'#c0392b'); }
 }
-async function simpanSemua(){ showLoading('Menyimpan...'); await saveDataJamaah(); await saveBukuKas(); await saveLaporanKas(); await saveSaldoAwal(); hideLoading(); showStatus('Semua data tersimpan'); }
+async function _simpanKeSupabase(periode){
+  await saveDataJamaah(); await saveBukuKas(); await saveLaporanKas(); await saveSaldoAwal();
+}
+async function simpanSemua(){ showLoading('Menyimpan...'); _dirty=false; await _simpanKeSupabase(getPeriode()); hideLoading(); showStatus('Semua data tersimpan'); }
+
+// ── CACHE HELPERS ────────────────────────────────────────────────
+function _cacheFromDOM(periode){
+  // Simpan state DOM ke cache
+  const djRows=[], bkRows=[], lkRows=[];
+  b1.querySelectorAll('tr:not(.rt)').forEach((row,idx)=>{ const td=row.querySelectorAll('td'); const nama=getText(td[5]); djRows.push({baris:idx+1,kk:td[3]?.dataset.checked==='1'?'1':'',nama,setor:getNum(td[0]),ir:getNum(td[6]),sudr:getNum(td[7]),ypk:getNum(td[8]),donpns:getNum(td[9]),jatdes:getNum(td[10]),suds:getNum(td[11]),satpam:getNum(td[12]),asad:getNum(td[13]),tanah:getNum(td[14]),dapur:getNum(td[15]),sdqremaja:getNum(td[16]),bata:getNum(td[17]),stia:getNum(td[18]),rt:getNum(td[19]),tk:getNum(td[20]),sym:getNum(td[21]),ytm:getNum(td[22]),or_col:getNum(td[23]),danasehat:getNum(td[24]),tpk:getNum(td[25])}); });
+  b2.querySelectorAll('tr').forEach(row=>{ if(!row.id||!row.id.match(/^k\d+$/)) return; const baris=parseInt(row.id.replace('k','')); const tds=row.querySelectorAll('td'); if(tds.length<4) return; bkRows.push({baris,tgl:getText(tds[0]),keterangan:getText(tds[1]),code:getText(tds[2]),debet:getNum(tds[3]),kredit:tds[4]?.querySelector('[contenteditable]')?getNum(tds[4]):0}); });
+  b3.querySelectorAll('tr').forEach((row,idx)=>{ const tds=row.querySelectorAll('td'); if(tds.length<4) return; lkRows.push({baris:idx+1,tgl:getText(tds[0]),code:getText(tds[2]),debet:tds[3]?.querySelector('[contenteditable]')?getNum(tds[3]):0,kredit:tds[4]?.querySelector('[contenteditable]')?getNum(tds[4]):0}); });
+  const kas=getNum(document.getElementById('k6saldo')), lap=getNum(document.getElementById('l3sAwal'));
+  _cache[periode]={ dj:djRows, bk:bkRows, lk:lkRows, sa:[{saldo_kas:kas,saldo_lap:lap}] };
+}
+function _renderDariCache(periode){
+  const c=_cache[periode]; if(!c) return;
+  _applyDJ(c.dj); _applyBK(c.bk); _applyLK(c.lk); _applySA(c.sa);
+  pasangFormatter(document.getElementById('t1')); pasangFormatter(document.getElementById('t2')); pasangFormatter(document.getElementById('t3'));
+  recalc1(); terapkanKelasKeData();
+}
+
+// ── FETCH & APPLY ────────────────────────────────────────────────
+async function _fetchPeriode(periode, saldoAkhirKas=0, saldoAkhirLap=0){
+  const klp=CFG.kelompok;
+  const [dj,bk,lk,sa] = await Promise.all([
+    sbSelect('data_jamaah','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode)+'&order=baris.asc'),
+    sbSelect('buku_kas','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode)+'&order=baris.asc'),
+    sbSelect('laporan_kas','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode)+'&order=baris.asc'),
+    sbSelect('saldo_awal','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode))
+  ]);
+  // Kalau saldo awal belum ada, isi dari saldo akhir periode sebelumnya
+  let saData = sa;
+  if(!sa.length && (saldoAkhirKas||saldoAkhirLap)){
+    saData=[{saldo_kas:saldoAkhirKas,saldo_lap:saldoAkhirLap}];
+    await sbUpsert('saldo_awal',[{kelompok:klp,periode,saldo_kas:saldoAkhirKas,saldo_lap:saldoAkhirLap,updated_at:new Date().toISOString()}]);
+  }
+  _cache[periode]={ dj, bk, lk, sa:saData };
+  _renderDariCache(periode);
+}
+function _applyDJ(data){
+  Array.from(b1.querySelectorAll('tr:not(.rt)')).forEach(r=>r.remove());
+  data.sort((a,b)=>a.baris-b.baris).forEach(row=>{
+    const tr=buatBarisJamaah(String(row.kk)==='1'); b1.insertBefore(tr,b1.querySelector('tr.rt'));
+    const td=tr.querySelectorAll('td');
+    setTd(td[0],row.setor||'');
+    if(String(row.kk)==='1'){td[3].dataset.checked='1';td[3].innerHTML='&#10004;';}
+    setTd(td[5],row.nama||'');
+    ['ir','sudr','ypk','donpns','jatdes','suds','satpam','asad','tanah','dapur','sdqremaja','bata','stia'].forEach((c,i)=>{if(row[c]) setTd(td[6+i],row[c]);});
+    ['rt','tk','sym','ytm','or_col','danasehat','tpk'].forEach((c,i)=>{if(row[c]) setTd(td[19+i],row[c]);});
+  });
+}
+function _applyBK(data){
+  b2.querySelectorAll('[contenteditable]').forEach(el=>el.textContent='');
+  data.forEach(row=>{ const tr=document.getElementById('k'+row.baris); if(!tr) return; const td=tr.querySelectorAll('td'); setTd(td[0],row.tgl||''); if(td[1]?.querySelector('[contenteditable]')) setTd(td[1],row.keterangan||''); setTd(td[2],row.code||''); if(td[3]?.querySelector('[contenteditable]')) setTd(td[3],row.debet||''); if(td[4]?.querySelector('[contenteditable]')) setTd(td[4],row.kredit||''); });
+}
+function _applyLK(data){
+  const trs=b3.querySelectorAll('tr');
+  data.sort((a,b)=>a.baris-b.baris).forEach(row=>{ const tr=trs[row.baris-1]; if(!tr) return; const td=tr.querySelectorAll('td'); setTd(td[0],row.tgl||''); setTd(td[2],row.code||''); if(td[3]?.querySelector('[contenteditable]')) setTd(td[3],row.debet||''); if(td[4]?.querySelector('[contenteditable]')) setTd(td[4],row.kredit||''); });
+}
+function _applySA(data){
+  if(data.length){ setTd(document.getElementById('k6saldo'),data[0].saldo_kas||''); setTd(document.getElementById('l3sAwal'),data[0].saldo_lap||''); }
+}
 
 let _loading=false;
 async function loadAll(){
   if(_loading) return; _loading=true;
-  updateLabels(); if(!GAS_URL){ _loading=false; return; }
+  updateLabels();
+  const p=getPeriode();
+  if(_cache[p]){
+    _renderDariCache(p); await loadKelas(); terapkanKelasKeData(); _loading=false; return;
+  }
   showLoading('Memuat data...');
-  try {
-    const kelompok=CFG.kelompok, periode=getPeriode();
-    const [dj,bk,lk,sa]=await Promise.all([api({action:'load',sheet:'data_jamaah',kelompok,periode}),api({action:'load',sheet:'buku_kas',kelompok,periode}),api({action:'load',sheet:'laporan_kas',kelompok,periode}),api({action:'load',sheet:'saldo_awal',kelompok,periode})]);
-    if(dj.ok){ Array.from(b1.querySelectorAll('tr:not(.rt)')).forEach(r=>r.remove()); dj.data.sort((a,b)=>a.baris-b.baris).forEach(row=>{ const tr=buatBarisJamaah(String(row.kk)==='1'); b1.insertBefore(tr,b1.querySelector('tr.rt')); const td=tr.querySelectorAll('td'); setTd(td[0],row.setor||''); if(String(row.kk)==='1'){td[3].dataset.checked='1';td[3].innerHTML='&#10004;';} setTd(td[5],row.nama||''); ['ir','sudr','ypk','donpns','jatdes','suds','satpam','asad','tanah','dapur','sdqremaja','bata','stia'].forEach((c,i)=>{if(row[c]) setTd(td[6+i],row[c]);}); ['rt','tk','sym','ytm','or_col','danasehat','tpk'].forEach((c,i)=>{if(row[c]) setTd(td[19+i],row[c]);}); }); }
-    if(bk.ok&&bk.data.length){ bk.data.forEach(row=>{ const tr=document.getElementById('k'+row.baris); if(!tr) return; const td=tr.querySelectorAll('td'); setTd(td[0],row.tgl||''); if(td[1]?.querySelector('[contenteditable]')) setTd(td[1],row.keterangan||''); setTd(td[2],row.code||''); if(td[3]?.querySelector('[contenteditable]')) setTd(td[3],row.debet||''); if(td[4]?.querySelector('[contenteditable]')) setTd(td[4],row.kredit||''); }); }
-    if(lk.ok&&lk.data.length){ const trs=b3.querySelectorAll('tr'); lk.data.sort((a,b)=>a.baris-b.baris).forEach(row=>{ const tr=trs[row.baris-1]; if(!tr) return; const td=tr.querySelectorAll('td'); setTd(td[0],row.tgl||''); setTd(td[2],row.code||''); if(td[3]?.querySelector('[contenteditable]')) setTd(td[3],row.debet||''); if(td[4]?.querySelector('[contenteditable]')) setTd(td[4],row.kredit||''); }); }
-    if(sa.ok&&sa.data.length){ setTd(document.getElementById('k6saldo'),sa.data[0].saldo_kas||''); setTd(document.getElementById('l3sAwal'),sa.data[0].saldo_lap||''); }
-  } catch(e){ showStatus('Error load: '+e.message,'#c0392b'); }
+  try { await _fetchPeriode(p); } catch(e){ showStatus('Error load: '+e.message,'#c0392b'); }
   pasangFormatter(document.getElementById('t1')); pasangFormatter(document.getElementById('t2')); pasangFormatter(document.getElementById('t3'));
   recalc1(); hideLoading(); await loadKelas(); terapkanKelasKeData(); _loading=false;
 }
@@ -326,17 +372,19 @@ async function simpanSetting(){
   const bulan=document.getElementById('cfg-bulan').value, tahun=parseInt(document.getElementById('cfg-tahun').value)||2025;
   _pd.b=BULAN.indexOf(bulan); _pd.t=tahun;
   const st=document.getElementById('cfg-status'); st.textContent='Menyimpan...'; st.style.color='#e67e22'; st.style.display='block';
-  const p=encodeURIComponent(JSON.stringify({action:'saveSetting',data:{kelompok:CFG.kelompok,bulan,tahun:String(tahun),gasUrl:GAS_URL}}));
-  const r=await (async()=>{ const res=await fetch(GAS_URL+'?payload='+p); const text=await res.text(); try{return JSON.parse(text);}catch(e){return{ok:false,error:text};} })();
-  st.textContent=r.ok?'Setting tersimpan.':'Error: '+r.error; st.style.color=r.ok?'var(--hijau2)':'#c0392b';
+  try {
+    await sbUpsert('setting',[{kelompok:CFG.kelompok,bulan,tahun:String(tahun),updated_at:new Date().toISOString()}]);
+    st.textContent='Setting tersimpan.'; st.style.color='var(--hijau2)';
+  } catch(e){ st.textContent='Error: '+e.message; st.style.color='#c0392b'; }
   setTimeout(()=>st.style.display='none',3000); updateLabels(); loadAll();
 }
 function resetAll(){ if(!confirm('Reset semua data di layar?')) return; Array.from(b1.querySelectorAll('tr:not(.rt)')).forEach(r=>r.remove()); b2.querySelectorAll('[contenteditable]').forEach(el=>el.textContent=''); b2.querySelectorAll('td.form,td.ref').forEach(td=>{td.textContent='0';delete td.dataset.precise;}); b3.querySelectorAll('[contenteditable]').forEach(el=>el.textContent=''); b3.querySelectorAll('td.form,td.ref').forEach(td=>{td.textContent='0';delete td.dataset.precise;}); recalc1(); }
 
-document.getElementById('cfg-url').value=GAS_URL;
 async function init(){
-  const r=await api({action:'loadSetting'});
-  if(r.ok&&r.data){ const s=r.data; if(s.kelompok){CFG.kelompok=s.kelompok;document.getElementById('cfg-kelompok').value=s.kelompok;} if(s.bulan){_pd.b=BULAN.indexOf(s.bulan);document.getElementById('cfg-bulan').value=s.bulan;} if(s.tahun){_pd.t=parseInt(s.tahun)||2025;document.getElementById('cfg-tahun').value=s.tahun;} }
+  try {
+    const all=await sbSelect('setting','order=id.desc&limit=1');
+    if(all.length){ const s=all[0]; if(s.kelompok){CFG.kelompok=s.kelompok;document.getElementById('cfg-kelompok').value=s.kelompok;} if(s.bulan){_pd.b=BULAN.indexOf(s.bulan);document.getElementById('cfg-bulan').value=s.bulan;} if(s.tahun){_pd.t=parseInt(s.tahun)||2025;document.getElementById('cfg-tahun').value=s.tahun;} }
+  } catch(e){}
   updateLabels(); loadAll();
 }
 </script>
@@ -381,15 +429,18 @@ function tambahKelas(){ _kelasList.push({nama:'',nominal:0,kolom:[],anggota:[]})
 async function simpanKelas(){
   const kelompok=CFG.kelompok;
   const rows=_kelasList.map((k,i)=>({kelompok,urutan:i+1,nama:k.nama||'',nominal:k.nominal||0,kolom:(k.kolom||[]).join(','),anggota:(k.anggota||[]).join('|'),updated_at:new Date().toISOString()}));
-  const payload=encodeURIComponent(JSON.stringify({action:'save',sheet:'kelas_setoran',kelompok,periode:'',rows}));
-  const res=await fetch(GAS_URL+'?payload='+payload); const text=await res.text();
-  let r; try{r=JSON.parse(text);}catch(e){r={ok:false,error:text};}
-  const st=document.getElementById('kelas-status'); st.textContent=r.ok?'Tersimpan':'Error: '+r.error; st.style.color=r.ok?'var(--hijau2)':'#c0392b'; st.style.display='block'; setTimeout(()=>st.style.display='none',2500);
-  if(r.ok) terapkanKelasKeData();
+  try {
+    await sbDelete('kelas_setoran','kelompok=eq.'+encodeURIComponent(kelompok));
+    await sbUpsert('kelas_setoran', rows);
+    const st=document.getElementById('kelas-status'); st.textContent='Tersimpan'; st.style.color='var(--hijau2)'; st.style.display='block'; setTimeout(()=>st.style.display='none',2500);
+  } catch(e){ const st=document.getElementById('kelas-status'); st.textContent='Error: '+e.message; st.style.color='#c0392b'; st.style.display='block'; }
+  terapkanKelasKeData();
 }
 async function loadKelas(){
-  let r=await api({action:'load',sheet:'kelas_setoran',kelompok:CFG.kelompok,periode:''});
-  if(r.ok&&r.data.length){ _kelasList=r.data.sort((a,b)=>a.urutan-b.urutan).map(k=>({nama:k.nama,nominal:parseFloat(k.nominal)||0,kolom:k.kolom?k.kolom.split(',').filter(Boolean):[],anggota:k.anggota?k.anggota.split('|').filter(Boolean):[]})); }
+  try {
+    const data=await sbSelect('kelas_setoran','kelompok=eq.'+encodeURIComponent(CFG.kelompok)+'&order=urutan.asc');
+    if(data.length){ _kelasList=data.map(k=>({nama:k.nama,nominal:parseFloat(k.nominal)||0,kolom:k.kolom?k.kolom.split(',').filter(Boolean):[],anggota:k.anggota?k.anggota.split('|').filter(Boolean):[]})); }
+  } catch(e){}
   renderKelas();
 }
 function terapkanKelasKeData(){

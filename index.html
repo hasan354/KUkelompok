@@ -2,7 +2,7 @@
 <div id="overlay" class="overlay"><div class="overlay-box" id="overlay-msg">Memuat data...</div></div>
 <div id="save-status"></div>
 <div class="cover"><div class="badge">Laporan Keuangan</div><h1 id="cover-kelompok">Kelompok</h1><div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:3px"><button onclick="gantiPeriode(-1)" style="background:none;border:none;color:var(--emas2);font-size:1.4rem;cursor:pointer;padding:0 4px">&#8249;</button><h2 id="cover-periode" style="margin:0">Desember 2025</h2><button onclick="gantiPeriode(1)" style="background:none;border:none;color:var(--emas2);font-size:1.4rem;cursor:pointer;padding:0 4px">&#8250;</button></div><p>Data Jamaah &amp; Kas Kelompok</p></div>
-<div class="toolbar"><span style="flex:1"></span><button class="btn btn-p" onclick="downloadExcel()">Download Excel</button><button class="btn btn-p" onclick="downloadLaporanKas()" style="background:var(--hijau2)">Download Laporan Kas Ke Daerah</button><button class="btn btn-p" onclick="simpanSemua()">Simpan Semua</button><button class="btn btn-r" onclick="resetAll()">Reset</button></div>
+<div class="toolbar"><span style="flex:1"></span><button class="btn btn-p" onclick="sinkronJamaah()" style="background:#2e7d5a" title="Ambil jamaah baru dari database absensi">🔄 Sync Jamaah</button><button class="btn btn-p" onclick="kelolaHidden()" style="background:#7a5c00" title="Tampilkan jamaah yang disembunyikan">👁 Tersembunyi</button><button class="btn btn-p" onclick="downloadExcel()">Download Excel</button><button class="btn btn-p" onclick="downloadLaporanKas()" style="background:var(--hijau2)">Download Laporan Kas Ke Daerah</button><button class="btn btn-p" onclick="simpanSemua()">Simpan Semua</button><button class="btn btn-r" onclick="resetAll()">Reset</button></div>
 <div class="tabs"><button class="tab on" onclick="showTab('data',this)">Data Jamaah</button><button class="tab" onclick="showTab('kas',this)">Buku Kas</button><button class="tab" onclick="showTab('lapkas',this)">Laporan Kas</button><button class="tab" onclick="showTab('setting',this)">Setting</button><button class="tab" onclick="showTab('kelas',this)">Kelas</button></div>
 <div id="p-data" class="panel on"><div class="ptitle">Data Semua Jamaah</div><div class="psub" id="sub-data">-</div><div class="divider"></div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center"><button class="btn btn-p" onclick="tambahKK()" style="background:var(--hijau2)">+ Tambah KK</button><button class="btn btn-p" onclick="tambahAnggota()">+ Tambah Anggota</button><span style="font-size:11px;color:#888">Klik kanan baris untuk hapus</span></div><div class="tbl-dj"><table id="t1"><thead><tr><th>SETOR</th><th>SISA</th><th>NO</th><th>KK</th><th>Anggota</th><th style="min-width:100px;text-align:left">NAMA</th><th>IR</th><th>SUDR</th><th>YPK</th><th>DONATUR PNS</th><th>JATAH DESA</th><th>SUDS</th><th>SATPAM PONDOK</th><th>ASAD</th><th>TANAH /KK 19K</th><th>DAPUR</th><th>SDQ REMAJA</th><th>BATA MERAH</th><th>STIA</th><th>RT</th><th>TK</th><th>SYM</th><th>YTM</th><th>OR</th><th>DANA SEHAT</th><th>TPK</th><th>FR</th><th>SHODAQOH</th><th>INFAQ</th><th>JUMLAH</th></tr></thead><tbody id="b1"></tbody></table></div></div>
 <div id="p-kas" class="panel"><div class="ptitle">Buku Kas Kelompok</div><div class="psub" id="sub-kas">-</div><div class="divider"></div><div class="tbl-wrap"><table id="t2"><thead><tr><th style="width:70px">Tgl</th><th style="text-align:left;min-width:200px">Keterangan</th><th style="width:55px">Code</th><th style="width:110px">Debet</th><th style="width:110px">Kredit</th><th style="width:120px">Saldo</th></tr></thead><tbody id="b2"></tbody></table></div></div>
@@ -17,6 +17,138 @@ const SB_URL  = 'https://bxahsunggxtqqxunmnft.supabase.co';
 const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4YWhzdW5nZ3h0cXF4dW5tbmZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDE2MTAsImV4cCI6MjA5MTYxNzYxMH0.XUk3Jqoym73i7JWCc1_zIzAiB9uQYyafqasl7wO-nRU';
 const SB_HDR  = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
+// ── DB LAMA (Supabase Absensi) — untuk sync tabel jamaah ──────────
+const SB_OLD_URL = 'https://llmunnusdtebvrajsboa.supabase.co';
+const SB_OLD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsbXVubnVzZHRlYnZyYWpzYm9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDU3OTIsImV4cCI6MjA5MTYyMTc5Mn0.0qX0w2PyJxJlLKgcdGE9DazAmqlXWwKjWf4k37Sgtvk';
+const SB_OLD_HDR = { 'apikey': SB_OLD_KEY, 'Authorization': 'Bearer ' + SB_OLD_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+async function sbOldGet(path){
+  const r=await fetch(SB_OLD_URL+'/rest/v1/'+path,{headers:SB_OLD_HDR});
+  if(!r.ok) return [];
+  return r.json();
+}
+async function sbOldPost(path,body){
+  const r=await fetch(SB_OLD_URL+'/rest/v1/'+path,{method:'POST',headers:SB_OLD_HDR,body:JSON.stringify(body)});
+  if(!r.ok){ console.warn('sbOldPost error',await r.text()); return null; }
+  return r.json();
+}
+async function sbOldPatch(path,body){
+  const r=await fetch(SB_OLD_URL+'/rest/v1/'+path,{method:'PATCH',headers:{...SB_OLD_HDR,'Prefer':'return=minimal'},body:JSON.stringify(body)});
+  if(!r.ok) console.warn('sbOldPatch error',await r.text());
+}
+async function sbOldDelete(path){
+  const r=await fetch(SB_OLD_URL+'/rest/v1/'+path,{method:'DELETE',headers:SB_OLD_HDR});
+  if(!r.ok) console.warn('sbOldDelete error',await r.text());
+}
+
+// Sync tambah KK ke tabel jamaah DB Lama
+async function syncTambahKKKeJamaah(nama){
+  try {
+    const existing=await sbOldGet('jamaah?order=urutan.desc&limit=1');
+    const urutan=existing.length?(existing[0].urutan||0)+10:10;
+    await sbOldPost('jamaah',{nama,jenis_kelamin:'L',is_ms:false,is_kk:true,kk_nama:'',urutan,hp:''});
+  } catch(e){ console.warn('Sync KK ke jamaah gagal:',e); }
+}
+
+// Sync tambah Anggota ke tabel jamaah DB Lama
+async function syncTambahAnggotaKeJamaah(nama, kkNama){
+  try {
+    const kkData=await sbOldGet('jamaah?is_kk=eq.true&nama=eq.'+encodeURIComponent(kkNama)+'&limit=1');
+    const kkUrutan=kkData.length?(kkData[0].urutan||0):0;
+    const anggotaKK=await sbOldGet('jamaah?kk_nama=eq.'+encodeURIComponent(kkNama)+'&order=urutan.desc&limit=1');
+    const lastUrutan=anggotaKK.length?(anggotaKK[0].urutan||kkUrutan):kkUrutan;
+    await sbOldPost('jamaah',{nama,jenis_kelamin:'L',is_ms:false,is_kk:false,kk_nama:kkNama,urutan:lastUrutan+1,hp:''});
+  } catch(e){ console.warn('Sync Anggota ke jamaah gagal:',e); }
+}
+
+// Sync hapus baris dari tabel jamaah DB Lama (berdasarkan nama)
+async function syncHapusJamaah(nama){
+  try {
+    await sbOldDelete('jamaah?nama=eq.'+encodeURIComponent(nama));
+  } catch(e){ console.warn('Sync hapus jamaah gagal:',e); }
+}
+
+// Sync rename nama di tabel jamaah DB Lama
+async function syncRenameJamaah(namaLama, namaBaru, isKK){
+  try {
+    await sbOldPatch('jamaah?nama=eq.'+encodeURIComponent(namaLama),{nama:namaBaru});
+    if(isKK){
+      await sbOldPatch('jamaah?kk_nama=eq.'+encodeURIComponent(namaLama),{kk_nama:namaBaru});
+    }
+  } catch(e){ console.warn('Sync rename jamaah gagal:',e); }
+}
+
+// ── HIDDEN LIST (lokal per kelompok) ─────────────────────────────
+// Daftar nama jamaah yang sengaja disembunyikan di KU.html
+// Disimpan di localStorage agar persisten tapi tidak mempengaruhi DB
+function _hiddenKey(){ return 'ku_hidden_'+CFG.kelompok; }
+function getHiddenList(){
+  try{ return JSON.parse(localStorage.getItem(_hiddenKey())||'[]'); }catch(e){ return []; }
+}
+function tambahKeHidden(nama){
+  const list = getHiddenList();
+  const key = nama.trim().toLowerCase();
+  if(!list.includes(key)){ list.push(key); localStorage.setItem(_hiddenKey(), JSON.stringify(list)); }
+}
+function hapusDariHidden(nama){
+  const list = getHiddenList().filter(n=>n!==nama.trim().toLowerCase());
+  localStorage.setItem(_hiddenKey(), JSON.stringify(list));
+}
+function isHidden(nama){
+  return getHiddenList().includes((nama||'').trim().toLowerCase());
+}
+
+// Dialog kelola jamaah tersembunyi — tampilkan kembali jika perlu
+function kelolaHidden(){
+  const list = getHiddenList();
+  if(!list.length){
+    alert('Tidak ada jamaah yang disembunyikan.');
+    return;
+  }
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center';
+  const box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:10px;padding:20px;min-width:280px;max-width:380px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.25)';
+  const ttl=document.createElement('div');
+  ttl.textContent='👁 Jamaah Tersembunyi di KU';
+  ttl.style.cssText='font-weight:700;color:var(--hijau);font-size:14px;margin-bottom:4px';
+  box.appendChild(ttl);
+  const sub=document.createElement('div');
+  sub.textContent='Klik nama untuk tampilkan kembali';
+  sub.style.cssText='font-size:11px;color:#888;margin-bottom:14px';
+  box.appendChild(sub);
+  list.forEach(namaKey=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:6px;background:#f5f2ea;margin-bottom:6px';
+    const lbl=document.createElement('span');
+    lbl.textContent=namaKey;
+    lbl.style.cssText='font-size:13px;font-weight:600';
+    const btn=document.createElement('button');
+    btn.textContent='Tampilkan';
+    btn.className='btn btn-p';
+    btn.style.cssText='padding:3px 10px;font-size:11px';
+    btn.onclick=async()=>{
+      hapusDariHidden(namaKey);
+      row.remove();
+      if(!box.querySelectorAll('[data-hidden-row]').length) overlay.remove();
+      // Reload agar jamaah muncul kembali
+      await sinkronJamaah(true);
+      if(!box.querySelector('[data-hidden-row]')) overlay.remove();
+    };
+    row.setAttribute('data-hidden-row','1');
+    row.appendChild(lbl);
+    row.appendChild(btn);
+    box.appendChild(row);
+  });
+  const btnTutup=document.createElement('button');
+  btnTutup.textContent='Tutup';
+  btnTutup.className='btn btn-r';
+  btnTutup.style.cssText='display:block;width:100%;margin-top:10px';
+  btnTutup.onclick=()=>overlay.remove();
+  box.appendChild(btnTutup);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
 async function sbSelect(table, query){
   const url = SB_URL + '/rest/v1/' + table + '?' + query;
   const r = await fetch(url, { headers: { ...SB_HDR, 'Prefer': 'return=representation' } });
@@ -117,6 +249,22 @@ function buatBarisJamaah(isKK=false){
   row.appendChild(tKK);
   row.appendChild(tdVal('form','',''));
   row.appendChild(tdInp('inp-l','Nama...'));
+  // Simpan nama lama untuk deteksi rename
+  let _namaLama = '';
+  const tdNama = row.querySelectorAll('td')[5] || row.lastChild;
+  setTimeout(()=>{
+    const namaEl = row.querySelectorAll('td')[5]?.querySelector('[contenteditable]');
+    if(!namaEl) return;
+    namaEl.addEventListener('focus',()=>{ _namaLama=(namaEl.textContent||'').trim(); });
+    namaEl.addEventListener('blur',async()=>{
+      const namaBaru=(namaEl.textContent||'').trim();
+      if(_namaLama && namaBaru && namaBaru!==_namaLama){
+        const isKK=row.querySelectorAll('td')[3]?.dataset.checked==='1';
+        await syncRenameJamaah(_namaLama, namaBaru, isKK);
+        _namaLama=namaBaru;
+      }
+    });
+  },50);
   row.appendChild(tdInp('inp','0'));
   for(let i=0;i<12;i++) row.appendChild(tdInp('inp','0'));
   for(let i=0;i<7;i++) row.appendChild(tdInp('inp','0'));
@@ -130,7 +278,23 @@ function buatBarisJamaah(isKK=false){
     if(td===row.querySelectorAll('td')[0]){ if(typeof terapkanKelasKeData==='function') terapkanKelasKeData(); }
     debounceSave1();
   });
-  row.addEventListener('contextmenu',e=>{ e.preventDefault(); showCtx(e,[{label:'Hapus baris ini',fn:()=>{row.remove();recalc1();debounceSave1();}},{label:'Sisip baris di atas',fn:()=>{const r=buatBarisJamaah();b1.insertBefore(r,row);recalc1();}}]); });
+  row.addEventListener('contextmenu',e=>{ e.preventDefault(); showCtx(e,[{label:'Hapus baris ini',fn:async()=>{
+    const namaEl=row.querySelectorAll('td')[5]?.querySelector('[contenteditable]');
+    const nama=(namaEl?.textContent||'').trim();
+    const isKK=row.querySelectorAll('td')[3]?.dataset.checked==='1';
+    const konfirmasi = isKK
+      ? `Hapus KK "${nama}" dari tabel keuangan ini?\n\n(Data jamaah di ABSENSI & DESA tidak terpengaruh)`
+      : `Hapus "${nama}" dari tabel keuangan ini?\n\n(Data jamaah di ABSENSI & DESA tidak terpengaruh)`;
+    if(!confirm(konfirmasi)) return;
+    row.remove(); recalc1();
+    // Simpan ke daftar hidden lokal agar tidak muncul lagi saat sync
+    if(nama) tambahKeHidden(nama);
+    // Hapus hanya dari data_jamaah (lokal KU.html) — tidak menyentuh tabel jamaah DB Lama
+    if(nama){
+      try{ await sbDelete('data_jamaah','kelompok=eq.'+encodeURIComponent(CFG.kelompok)+'&nama=eq.'+encodeURIComponent(nama)); }catch(e){}
+    }
+    debounceSave1();
+  }},{label:'Sisip baris di atas',fn:()=>{const r=buatBarisJamaah();b1.insertBefore(r,row);recalc1();}}]); });
   setTimeout(()=>pasangFormatter(row),0);
   return row;
 }
@@ -167,7 +331,24 @@ function recalc1(){
   recalc2(); recalc3();
 }
 
-function tambahKK(){ const row=buatBarisJamaah(true); b1.insertBefore(row,b1.querySelector('tr.rt')); recalc1(); row.querySelectorAll('td')[5]?.querySelector('[contenteditable]')?.focus(); }
+function tambahKK(){
+  const row=buatBarisJamaah(true);
+  b1.insertBefore(row,b1.querySelector('tr.rt'));
+  recalc1();
+  const namaEl=row.querySelectorAll('td')[5]?.querySelector('[contenteditable]');
+  if(namaEl){
+    namaEl.focus();
+    // Saat nama KK selesai diisi (blur), sync ke tabel jamaah
+    namaEl.addEventListener('blur',async function onBlurKK(){
+      const nama=(namaEl.textContent||'').trim();
+      if(nama){
+        namaEl.removeEventListener('blur',onBlurKK);
+        await syncTambahKKKeJamaah(nama);
+      }
+    });
+  }
+}
+
 function tambahAnggota(){
   const rows=Array.from(b1.querySelectorAll('tr:not(.rt)')); const daftarKK=[];
   rows.forEach((row,idx)=>{ const td=row.querySelectorAll('td'); if(td[3]?.dataset.checked==='1'){ const nama=(td[5]?.querySelector('[contenteditable]')?.textContent||'').trim(); daftarKK.push({idx,nama:nama||'KK '+(daftarKK.length+1),row}); } });
@@ -175,7 +356,7 @@ function tambahAnggota(){
   const overlay=document.createElement('div'); overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center';
   const box=document.createElement('div'); box.style.cssText='background:#fff;border-radius:10px;padding:20px;min-width:260px;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.25)';
   const ttl=document.createElement('div'); ttl.textContent='Pilih KK untuk tambah anggota'; ttl.style.cssText='font-weight:700;color:var(--hijau);font-size:14px;margin-bottom:14px'; box.appendChild(ttl);
-  daftarKK.forEach(({row:kkRow,nama})=>{ const btn=document.createElement('button'); btn.textContent=nama; btn.className='btn btn-p'; btn.style.cssText='display:block;width:100%;margin-bottom:8px;text-align:left;padding:8px 12px'; btn.onclick=()=>{ overlay.remove(); const allRows=Array.from(b1.querySelectorAll('tr:not(.rt)')); const kkIdx=allRows.indexOf(kkRow); let insertBefore=b1.querySelector('tr.rt'); for(let i=kkIdx+1;i<allRows.length;i++){ if(allRows[i].querySelectorAll('td')[3]?.dataset.checked==='1'){insertBefore=allRows[i];break;} } const baris=buatBarisJamaah(false); b1.insertBefore(baris,insertBefore); recalc1(); baris.querySelectorAll('td')[5]?.querySelector('[contenteditable]')?.focus(); }; box.appendChild(btn); });
+  daftarKK.forEach(({row:kkRow,nama:kkNama})=>{ const btn=document.createElement('button'); btn.textContent=kkNama; btn.className='btn btn-p'; btn.style.cssText='display:block;width:100%;margin-bottom:8px;text-align:left;padding:8px 12px'; btn.onclick=()=>{ overlay.remove(); const allRows=Array.from(b1.querySelectorAll('tr:not(.rt)')); const kkIdx=allRows.indexOf(kkRow); let insertBefore=b1.querySelector('tr.rt'); for(let i=kkIdx+1;i<allRows.length;i++){ if(allRows[i].querySelectorAll('td')[3]?.dataset.checked==='1'){insertBefore=allRows[i];break;} } const baris=buatBarisJamaah(false); b1.insertBefore(baris,insertBefore); recalc1(); const namaEl=baris.querySelectorAll('td')[5]?.querySelector('[contenteditable]'); if(namaEl){ namaEl.focus(); namaEl.addEventListener('blur',async function onBlurAng(){ const nama=(namaEl.textContent||'').trim(); if(nama){ namaEl.removeEventListener('blur',onBlurAng); await syncTambahAnggotaKeJamaah(nama,kkNama); } }); } }; box.appendChild(btn); });
   const btnBatal=document.createElement('button'); btnBatal.textContent='Batal'; btnBatal.className='btn btn-r'; btnBatal.style.cssText='display:block;width:100%;margin-top:4px'; btnBatal.onclick=()=>overlay.remove(); box.appendChild(btnBatal);
   overlay.appendChild(box); document.body.appendChild(overlay);
 }
@@ -237,7 +418,20 @@ const rPen=document.createElement('tr'); rPen.className='rj'; const tdPen=docume
 b3.appendChild(lapRow('FR 100%','ref','','l3d8','')); b3.appendChild(lapRow('Shodaqoh 100%','ref','','l3d9','')); b3.appendChild(lapRow('Infaq','ref','','l3d10','')); b3.appendChild(lapRow('INF Romadhon','ref','','l3d11','')); b3.appendChild(lapRow("INF Jum'at",'ref','','l3d12','')); b3.appendChild(lapRow('INF Lailatul Qodar','ref','','l3d13','')); b3.appendChild(lapRow('INF Hari Raya','ref','','l3d14','')); b3.appendChild(lapRow('Warisan rod','ref','','l3d15','')); b3.appendChild(lapRow('Zakat','ref','','l3d16','')); b3.appendChild(lapRowInp('Hibah','deb')); b3.appendChild(lapRowInp('Laba Usaha','deb'));
 const rKel=document.createElement('tr'); rKel.className='rj'; const tdKel=document.createElement('td'); tdKel.colSpan=6; tdKel.textContent='PENGELUARAN'; rKel.appendChild(tdKel); b3.appendChild(rKel);
 b3.appendChild(lapRow('FR 100%','','ref','','l3e22')); b3.appendChild(lapRowInp('SHODAQOH','kre')); b3.appendChild(lapRow('INFAQ','','ref','','l3e24')); b3.appendChild(lapRow('INF Romadhon 3/4','','ref','','l3e25')); b3.appendChild(lapRow("INF JUM'AT 2/3",'','ref','','l3e26')); b3.appendChild(lapRow('INF Lailatul Qodar 2/3','','ref','','l3e27')); b3.appendChild(lapRow('INF Hari Raya 100%','','ref','','l3e28')); b3.appendChild(lapRow('Warisan rod 7/8','','ref','','l3e29')); b3.appendChild(lapRowInp('Zakat','kre')); b3.appendChild(lapRowInp('operasional','kre'));
-const rSaldo=document.createElement('tr'); rSaldo.className='rs'; const tdSaldoL=document.createElement('td'); tdSaldoL.colSpan=5; tdSaldoL.style.textAlign='right'; tdSaldoL.textContent='SALDO AKHIR'; rSaldo.appendChild(tdSaldoL); const tdSaldoV=tdVal('form','l3sAkh','0'); rSaldo.appendChild(tdSaldoV); b3.appendChild(rSaldo);
+
+// Baris JUMLAH
+const rJml=document.createElement('tr'); rJml.className='rt';
+const tdJmlL=document.createElement('td'); tdJmlL.colSpan=3; tdJmlL.textContent='JUMLAH'; rJml.appendChild(tdJmlL);
+const tdJmlD=tdVal('form','l3jmlD','0'); rJml.appendChild(tdJmlD);
+const tdJmlK=tdVal('form','l3jmlK','0'); rJml.appendChild(tdJmlK);
+rJml.appendChild(document.createElement('td')); b3.appendChild(rJml);
+
+// Baris SALDO BULAN
+const rSaldoBulan=document.createElement('tr'); rSaldoBulan.className='rs';
+const tdSBL=document.createElement('td'); tdSBL.colSpan=5; tdSBL.style.textAlign='right'; tdSBL.textContent='SALDO BULAN'; rSaldoBulan.appendChild(tdSBL);
+const tdSBV=tdVal('form','l3saldoBulan','0'); rSaldoBulan.appendChild(tdSBV); b3.appendChild(rSaldoBulan);
+
+const rSaldo=document.createElement('tr'); rSaldo.className='rsa'; const tdSaldoL=document.createElement('td'); tdSaldoL.colSpan=5; tdSaldoL.style.textAlign='right'; tdSaldoL.textContent='SALDO AKHIR'; rSaldo.appendChild(tdSaldoL); const tdSaldoV=tdVal('form','l3sAkh','0'); rSaldo.appendChild(tdSaldoV); b3.appendChild(rSaldo);
 
 function recalc3(){
   const W35=num((document.getElementById('jW')||{textContent:'0'}).textContent), X35=num((document.getElementById('jX')||{textContent:'0'}).textContent), Y35=num((document.getElementById('jY')||{textContent:'0'}).textContent);
@@ -245,9 +439,12 @@ function recalc3(){
   function set(id,val){ const el=document.getElementById(id); if(!el) return; el.textContent=fmt(val); el.dataset.precise=val; }
   set('l3d8',W35);set('l3d9',X35);set('l3d10',Y35);set('l3d11',D13);set('l3d12',D14);set('l3d13',D15);set('l3d14',D16);set('l3d15',D22);set('l3d16',D17);
   set('l3e22',W35);set('l3e24',Y35);set('l3e25',D13*3/4);set('l3e26',D14*2/3);set('l3e27',D15*2/3);set('l3e28',D16);set('l3e29',D22*7/8);
-  const sAwal=getNum(document.getElementById('l3sAwal')); let totD=sAwal,totK=0;
-  b3.querySelectorAll('tr:not(.rl):not(.rj):not(.rs)').forEach(row=>{ const tds=row.querySelectorAll('td'); if(tds.length<5) return; const getP=td=>{ if(!td) return 0; return td.dataset?.precise!==undefined?parseFloat(td.dataset.precise)||0:getNum(td); }; totD+=getP(tds[3]); totK+=getP(tds[4]); });
-  set('l3sAkh',totD-totK);
+  const sAwal=getNum(document.getElementById('l3sAwal')); let totD=0,totK=0;
+  b3.querySelectorAll('tr:not(.rl):not(.rj):not(.rs):not(.rt):not(.rsa)').forEach(row=>{ const tds=row.querySelectorAll('td'); if(tds.length<5) return; const getP=td=>{ if(!td) return 0; return td.dataset?.precise!==undefined?parseFloat(td.dataset.precise)||0:getNum(td); }; totD+=getP(tds[3]); totK+=getP(tds[4]); });
+  set('l3jmlD',totD); set('l3jmlK',totK);
+  const saldoBulan=totD-totK;
+  set('l3saldoBulan',saldoBulan);
+  set('l3sAkh',sAwal+saldoBulan);
 }
 document.getElementById('t3').addEventListener('input',()=>{ recalc3(); debounceSave3(); });
 document.getElementById('b3').addEventListener('input',e=>{ if(e.target.closest('#l3sAwal')){ recalc3(); debounceSaveSaldo(); } });
@@ -262,6 +459,8 @@ const debounceSaveKelas=debounce(()=>simpanKelas(),1500);
 async function saveDataJamaah(){
   const rows=[];
   b1.querySelectorAll('tr:not(.rt)').forEach((row,idx)=>{ const td=row.querySelectorAll('td'); const nama=getText(td[5]); if(!nama) return; rows.push({kelompok:CFG.kelompok,periode:getPeriode(),baris:idx+1,no:getText(td[2]),kk:td[3]?.dataset.checked==='1'?'1':'',nama,setor:getNum(td[0]),ir:getNum(td[6]),sudr:getNum(td[7]),ypk:getNum(td[8]),donpns:getNum(td[9]),jatdes:getNum(td[10]),suds:getNum(td[11]),satpam:getNum(td[12]),asad:getNum(td[13]),tanah:getNum(td[14]),dapur:getNum(td[15]),sdqremaja:getNum(td[16]),bata:getNum(td[17]),stia:getNum(td[18]),rt:getNum(td[19]),tk:getNum(td[20]),sym:getNum(td[21]),ytm:getNum(td[22]),or_col:getNum(td[23]),danasehat:getNum(td[24]),tpk:getNum(td[25]),updated_at:new Date().toISOString()}); });
+  // Jangan simpan kalau tidak ada data — mencegah hapus data yang belum ter-render
+  if(!rows.length) return;
   try {
     await sbDelete('data_jamaah','kelompok=eq.'+encodeURIComponent(CFG.kelompok)+'&periode=eq.'+encodeURIComponent(getPeriode()));
     await sbUpsert('data_jamaah', rows);
@@ -323,20 +522,96 @@ async function _fetchPeriode(periode, saldoAkhirKas=0, saldoAkhirLap=0){
     sbSelect('saldo_awal','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode))
   ]);
 
-  // Kalau data jamaah kosong, copy struktur dari periode manapun yang ada (nama & KK, nilai = 0)
-  let djData = dj;
-  if(!dj.length){
-    const djLama = await sbSelect('data_jamaah','kelompok=eq.'+encodeURIComponent(klp)+'&order=baris.asc&limit=200');
-    // Ambil periode terbaru yang ada
-    if(djLama.length){
-      // Cari periode terbaru
-      const periodeAda = [...new Set(djLama.map(r=>r.periode))];
-      // Ambil baris unik per baris (ambil dari periode pertama yang ditemukan)
-      const seen = new Set();
-      djData = djLama
-        .filter(r=>{ if(seen.has(r.baris)) return false; seen.add(r.baris); return true; })
-        .map(r=>({ ...r, periode, setor:0, ir:0, sudr:0, ypk:0, donpns:0, jatdes:0, suds:0, satpam:0, asad:0, tanah:0, dapur:0, sdqremaja:0, bata:0, stia:0, rt:0, tk:0, sym:0, ytm:0, or_col:0, danasehat:0, tpk:0 }));
+  // ── BANGUN djData dari tabel jamaah DB Lama sebagai MASTER ──────
+  // Tabel jamaah DB Lama = sumber kebenaran struktur (urutan, KK/anggota, nama)
+  // data_jamaah = hanya menyimpan nilai setoran/iuran per periode
+  let djData = [];
+  try {
+    const jamaahMaster = await sbOldGet('jamaah?order=urutan.asc,nama.asc');
+    if(jamaahMaster.length){
+      // Buat map nama → data nilai dari data_jamaah periode ini
+      const nilaiMap = {};
+      dj.forEach(r=>{ nilaiMap[(r.nama||'').trim().toLowerCase()] = r; });
+
+      // ── Urutkan: KK dulu, lalu anggotanya langsung di bawah ──
+      // Bangun map kk_nama → [anggota], dan list KK berurut
+      const kkList = jamaahMaster.filter(j=>j.is_kk).sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+      const anggotaMap = {}; // kk_nama.lower → [anggota]
+      const tanpaKK = [];
+      jamaahMaster.filter(j=>!j.is_kk).forEach(j=>{
+        const k = (j.kk_nama||'').trim().toLowerCase();
+        if(k){ if(!anggotaMap[k]) anggotaMap[k]=[]; anggotaMap[k].push(j); }
+        else tanpaKK.push(j);
+      });
+      // Sort anggota tiap KK berdasarkan urutan
+      Object.values(anggotaMap).forEach(arr=>arr.sort((a,b)=>(a.urutan||0)-(b.urutan||0)));
+
+      // Susun urutan final: KK → anggotanya → KK berikutnya → dst → tanpa KK
+      const urutan = [];
+      kkList.forEach(kk=>{
+        urutan.push(kk);
+        const anggota = anggotaMap[(kk.nama||'').trim().toLowerCase()] || [];
+        anggota.forEach(a=>urutan.push(a));
+      });
+      tanpaKK.sort((a,b)=>(a.urutan||0)-(b.urutan||0)).forEach(j=>urutan.push(j));
+
+      urutan.forEach((j, idx)=>{
+        const nama=(j.nama||'').trim();
+        if(!nama) return;
+        if(isHidden(nama)) return; // disembunyikan lokal di KU.html
+        const existing = nilaiMap[nama.toLowerCase()] || {};
+        djData.push({
+          kelompok:klp, periode, baris:idx+1,
+          no: existing.no||'',
+          kk: j.is_kk ? '1' : '',
+          nama,
+          setor: existing.setor||0,
+          ir:    existing.ir||0,
+          sudr:  existing.sudr||0,
+          ypk:   existing.ypk||0,
+          donpns:existing.donpns||0,
+          jatdes:existing.jatdes||0,
+          suds:  existing.suds||0,
+          satpam:existing.satpam||0,
+          asad:  existing.asad||0,
+          tanah: existing.tanah||0,
+          dapur: existing.dapur||0,
+          sdqremaja:existing.sdqremaja||0,
+          bata:  existing.bata||0,
+          stia:  existing.stia||0,
+          rt:    existing.rt||0,
+          tk:    existing.tk||0,
+          sym:   existing.sym||0,
+          ytm:   existing.ytm||0,
+          or_col:existing.or_col||0,
+          danasehat:existing.danasehat||0,
+          tpk:   existing.tpk||0,
+        });
+      });
+
+      // Simpan/update data_jamaah agar sinkron (upsert semua baris)
+      if(djData.length){
+        try {
+          await sbDelete('data_jamaah','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode));
+          await sbUpsert('data_jamaah', djData);
+        } catch(e){ console.warn('Simpan data_jamaah gagal:',e); }
+      }
+    } else {
+      // Fallback: DB Lama kosong, pakai data_jamaah lama seperti semula
+      djData = dj;
+      if(!djData.length){
+        const djLamaAll = await sbSelect('data_jamaah','kelompok=eq.'+encodeURIComponent(klp)+'&order=baris.asc&limit=200');
+        if(djLamaAll.length){
+          const seen = new Set();
+          djData = djLamaAll
+            .filter(r=>{ if(seen.has(r.baris)) return false; seen.add(r.baris); return true; })
+            .map(r=>({ ...r, periode, setor:0, ir:0, sudr:0, ypk:0, donpns:0, jatdes:0, suds:0, satpam:0, asad:0, tanah:0, dapur:0, sdqremaja:0, bata:0, stia:0, rt:0, tk:0, sym:0, ytm:0, or_col:0, danasehat:0, tpk:0 }));
+        }
+      }
     }
+  } catch(e){
+    console.warn('Fetch jamaah master gagal, fallback ke data_jamaah:', e);
+    djData = dj;
   }
 
   // Kalau saldo awal belum ada, ambil dari saldo_awal periode sebelumnya di Supabase
@@ -392,12 +667,36 @@ async function loadAll(){
   updateLabels();
   const p=getPeriode();
   if(_cache[p]){
-    _renderDariCache(p); await loadKelas(); terapkanKelasKeData(); _loading=false; return;
+    _renderDariCache(p); await loadKelas(); terapkanKelasKeData(); _loading=false;
+    return;
   }
   showLoading('Memuat data...');
   try { await _fetchPeriode(p); } catch(e){ showStatus('Error load: '+e.message,'#c0392b'); }
   pasangFormatter(document.getElementById('t1')); pasangFormatter(document.getElementById('t2')); pasangFormatter(document.getElementById('t3'));
   recalc1(); hideLoading(); await loadKelas(); terapkanKelasKeData(); _loading=false;
+}
+
+// ── SYNC JAMAAH DARI DB LAMA ─────────────────────────────────────
+// Tombol manual: invalidate cache periode ini lalu reload dari master
+async function sinkronJamaah(silent=false){
+  if(!CFG.kelompok){ if(!silent) showStatus('Isi nama kelompok di Setting dulu','#c0392b'); return; }
+  const p=getPeriode();
+  // Hapus cache periode ini agar _fetchPeriode dipanggil ulang (rebuild dari master)
+  delete _cache[p];
+  if(!silent) showLoading('Sinkronisasi jamaah...');
+  try {
+    await _fetchPeriode(p);
+    pasangFormatter(document.getElementById('t1'));
+    recalc1();
+    await loadKelas();
+    terapkanKelasKeData();
+    if(!silent) showStatus('✅ Sinkronisasi selesai','#2e7d5a');
+  } catch(e){
+    if(!silent) showStatus('Sync gagal: '+e.message,'#c0392b');
+    console.warn('sinkronJamaah error:',e);
+  } finally {
+    if(!silent) hideLoading();
+  }
 }
 
 async function simpanSetting(){
@@ -633,48 +932,49 @@ function downloadLaporanKas(){
   // PENERIMAAN header
   aoa.push(['','PENERIMAAN','','','','']); styles.push([sN,sB,sN,sN,sN,sN]);
 
-  // Baris penerimaan fixed sesuai format laporan
+  // Nilai dari formula refs buku kas
   const frVal=kre(23), shodVal=getNum(document.getElementById('k24')?.querySelectorAll('td')[4]);
-  const infVal=kre(25), infJumVal=kre(27);
-  // INF Desa = jatdes total dari data jamaah (kolom jY di footer)
-  const infDesaVal=num((document.getElementById('jY')||{textContent:'0'}).textContent);
+  const infVal=kre(25), infRomVal=kre(26), infJumVal=kre(27);
+  const infLailVal=kre(28), infHariVal=kre(29), warisVal=kre(30), zakatVal=kre(31);
+  const opsVal=getNum(document.getElementById('k32')?.querySelectorAll('td')[4]);
 
   const penBaris=[
-    {ket:'FR 100%',val:frVal},
+    {ket:'FR 100%',      val:frVal},
     {ket:'Shodaqoh 100%',val:shodVal},
-    {ket:'Infaq',val:infVal},
-    {ket:"INF Jum'at",val:infJumVal},
-    {ket:'INF Desa',val:infDesaVal},
+    {ket:'Infaq',        val:infVal},
+    {ket:'INF Romadhon', val:infRomVal},
+    {ket:"INF Jum'at",   val:infJumVal},
+    {ket:'INF Lailatul Qodar', val:infLailVal},
+    {ket:'INF Hari Raya',val:infHariVal},
+    {ket:'Warisan ROT',  val:warisVal},
+    {ket:'Zakat',        val:zakatVal},
+    {ket:'Hibah',        val:0},
+    {ket:'Laba Usaha/Deviden', val:0},
   ];
   penBaris.forEach(r=>{ aoa.push(['',r.ket,'',r.val||'','','']); styles.push([sN,sN,sN,r.val?sNR:sN,sN,sN]); });
-  // 7 baris kosong penerimaan
-  for(let i=0;i<7;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
+  // 2 baris kosong penerimaan
+  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
 
   // PENGELUARAN header
   aoa.push(['','PENGELUARAN','','','','']); styles.push([sN,sB,sN,sN,sN,sN]);
 
-  const infRomVal=kre(26), infLailVal=kre(28), infHariVal=kre(29);
-  const warisVal=kre(30), zakatVal=kre(31);
-  const opsVal=getNum(document.getElementById('k32')?.querySelectorAll('td')[4]);
-
-  // FR 100%, SHODAQOH, INFAQ
-  aoa.push(['','FR 100%','','',frVal||'','']); styles.push([sN,sN,sN,sN,frVal?sNR:sN,sN]);
-  aoa.push(['','SHODAQOH','','',shodVal||'','']); styles.push([sN,sN,sN,sN,shodVal?sNR:sN,sN]);
-  aoa.push(['','INFAQ','','',infVal||'','']); styles.push([sN,sN,sN,sN,infVal?sNR:sN,sN]);
-  // 1 baris kosong
-  aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]);
-  // INF JUM'AT 2/3
-  aoa.push(['',"INF JUM'AT 2/3",'','',infJumVal||'','']); styles.push([sN,sN,sN,sN,infJumVal?sNR:sN,sN]);
-  // 2 baris kosong
-  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
-  // operasional
-  aoa.push(['','operasional','','',opsVal||'','']); styles.push([sN,sN,sN,sN,opsVal?sNR:sN,sN]);
-  // 2 baris kosong
-  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
+  const kelBaris=[
+    {ket:'FR 100%',              val:frVal},
+    {ket:'SHODAQOH',             val:shodVal},
+    {ket:'INFAQ',                val:infVal},
+    {ket:'INF Romadhon 3/4',     val:infRomVal},
+    {ket:"INF JUM'AT 2/3",       val:infJumVal},
+    {ket:'INF Lailatul Qodar 2/3',val:infLailVal},
+    {ket:'INF Hari Raya 100%',   val:infHariVal},
+    {ket:'Warisan rod 7/8',      val:warisVal},
+    {ket:'Zakat',                val:zakatVal},
+    {ket:'operasional',          val:opsVal},
+  ];
+  kelBaris.forEach(r=>{ aoa.push(['',r.ket,'','',r.val||'','']); styles.push([sN,sN,sN,sN,r.val?sNR:sN,sN]); });
 
   // Hitung total
-  let totD=penBaris.reduce((s,r)=>s+r.val,0);
-  let totK=frVal+shodVal+infVal+infJumVal+opsVal;
+  const totD=penBaris.reduce((s,r)=>s+(r.val||0),0);
+  const totK=kelBaris.reduce((s,r)=>s+(r.val||0),0);
   const saldoBulan=totD-totK;
   const saldoAkhir=sAwal+saldoBulan;
 

@@ -237,20 +237,7 @@ const rPen=document.createElement('tr'); rPen.className='rj'; const tdPen=docume
 b3.appendChild(lapRow('FR 100%','ref','','l3d8','')); b3.appendChild(lapRow('Shodaqoh 100%','ref','','l3d9','')); b3.appendChild(lapRow('Infaq','ref','','l3d10','')); b3.appendChild(lapRow('INF Romadhon','ref','','l3d11','')); b3.appendChild(lapRow("INF Jum'at",'ref','','l3d12','')); b3.appendChild(lapRow('INF Lailatul Qodar','ref','','l3d13','')); b3.appendChild(lapRow('INF Hari Raya','ref','','l3d14','')); b3.appendChild(lapRow('Warisan rod','ref','','l3d15','')); b3.appendChild(lapRow('Zakat','ref','','l3d16','')); b3.appendChild(lapRowInp('Hibah','deb')); b3.appendChild(lapRowInp('Laba Usaha','deb'));
 const rKel=document.createElement('tr'); rKel.className='rj'; const tdKel=document.createElement('td'); tdKel.colSpan=6; tdKel.textContent='PENGELUARAN'; rKel.appendChild(tdKel); b3.appendChild(rKel);
 b3.appendChild(lapRow('FR 100%','','ref','','l3e22')); b3.appendChild(lapRowInp('SHODAQOH','kre')); b3.appendChild(lapRow('INFAQ','','ref','','l3e24')); b3.appendChild(lapRow('INF Romadhon 3/4','','ref','','l3e25')); b3.appendChild(lapRow("INF JUM'AT 2/3",'','ref','','l3e26')); b3.appendChild(lapRow('INF Lailatul Qodar 2/3','','ref','','l3e27')); b3.appendChild(lapRow('INF Hari Raya 100%','','ref','','l3e28')); b3.appendChild(lapRow('Warisan rod 7/8','','ref','','l3e29')); b3.appendChild(lapRowInp('Zakat','kre')); b3.appendChild(lapRowInp('operasional','kre'));
-
-// Baris JUMLAH
-const rJml=document.createElement('tr'); rJml.className='rt';
-const tdJmlL=document.createElement('td'); tdJmlL.colSpan=3; tdJmlL.textContent='JUMLAH'; rJml.appendChild(tdJmlL);
-const tdJmlD=tdVal('form','l3jmlD','0'); rJml.appendChild(tdJmlD);
-const tdJmlK=tdVal('form','l3jmlK','0'); rJml.appendChild(tdJmlK);
-rJml.appendChild(document.createElement('td')); b3.appendChild(rJml);
-
-// Baris SALDO BULAN
-const rSaldoBulan=document.createElement('tr'); rSaldoBulan.className='rs';
-const tdSBL=document.createElement('td'); tdSBL.colSpan=5; tdSBL.style.textAlign='right'; tdSBL.textContent='SALDO BULAN'; rSaldoBulan.appendChild(tdSBL);
-const tdSBV=tdVal('form','l3saldoBulan','0'); rSaldoBulan.appendChild(tdSBV); b3.appendChild(rSaldoBulan);
-
-const rSaldo=document.createElement('tr'); rSaldo.className='rsa'; const tdSaldoL=document.createElement('td'); tdSaldoL.colSpan=5; tdSaldoL.style.textAlign='right'; tdSaldoL.textContent='SALDO AKHIR'; rSaldo.appendChild(tdSaldoL); const tdSaldoV=tdVal('form','l3sAkh','0'); rSaldo.appendChild(tdSaldoV); b3.appendChild(rSaldo);
+const rSaldo=document.createElement('tr'); rSaldo.className='rs'; const tdSaldoL=document.createElement('td'); tdSaldoL.colSpan=5; tdSaldoL.style.textAlign='right'; tdSaldoL.textContent='SALDO AKHIR'; rSaldo.appendChild(tdSaldoL); const tdSaldoV=tdVal('form','l3sAkh','0'); rSaldo.appendChild(tdSaldoV); b3.appendChild(rSaldo);
 
 function recalc3(){
   const W35=num((document.getElementById('jW')||{textContent:'0'}).textContent), X35=num((document.getElementById('jX')||{textContent:'0'}).textContent), Y35=num((document.getElementById('jY')||{textContent:'0'}).textContent);
@@ -258,12 +245,9 @@ function recalc3(){
   function set(id,val){ const el=document.getElementById(id); if(!el) return; el.textContent=fmt(val); el.dataset.precise=val; }
   set('l3d8',W35);set('l3d9',X35);set('l3d10',Y35);set('l3d11',D13);set('l3d12',D14);set('l3d13',D15);set('l3d14',D16);set('l3d15',D22);set('l3d16',D17);
   set('l3e22',W35);set('l3e24',Y35);set('l3e25',D13*3/4);set('l3e26',D14*2/3);set('l3e27',D15*2/3);set('l3e28',D16);set('l3e29',D22*7/8);
-  const sAwal=getNum(document.getElementById('l3sAwal')); let totD=0,totK=0;
-  b3.querySelectorAll('tr:not(.rl):not(.rj):not(.rs):not(.rt):not(.rsa)').forEach(row=>{ const tds=row.querySelectorAll('td'); if(tds.length<5) return; const getP=td=>{ if(!td) return 0; return td.dataset?.precise!==undefined?parseFloat(td.dataset.precise)||0:getNum(td); }; totD+=getP(tds[3]); totK+=getP(tds[4]); });
-  set('l3jmlD',totD); set('l3jmlK',totK);
-  const saldoBulan=totD-totK;
-  set('l3saldoBulan',saldoBulan);
-  set('l3sAkh',sAwal+saldoBulan);
+  const sAwal=getNum(document.getElementById('l3sAwal')); let totD=sAwal,totK=0;
+  b3.querySelectorAll('tr:not(.rl):not(.rj):not(.rs)').forEach(row=>{ const tds=row.querySelectorAll('td'); if(tds.length<5) return; const getP=td=>{ if(!td) return 0; return td.dataset?.precise!==undefined?parseFloat(td.dataset.precise)||0:getNum(td); }; totD+=getP(tds[3]); totK+=getP(tds[4]); });
+  set('l3sAkh',totD-totK);
 }
 document.getElementById('t3').addEventListener('input',()=>{ recalc3(); debounceSave3(); });
 document.getElementById('b3').addEventListener('input',e=>{ if(e.target.closest('#l3sAwal')){ recalc3(); debounceSaveSaldo(); } });
@@ -278,8 +262,6 @@ const debounceSaveKelas=debounce(()=>simpanKelas(),1500);
 async function saveDataJamaah(){
   const rows=[];
   b1.querySelectorAll('tr:not(.rt)').forEach((row,idx)=>{ const td=row.querySelectorAll('td'); const nama=getText(td[5]); if(!nama) return; rows.push({kelompok:CFG.kelompok,periode:getPeriode(),baris:idx+1,no:getText(td[2]),kk:td[3]?.dataset.checked==='1'?'1':'',nama,setor:getNum(td[0]),ir:getNum(td[6]),sudr:getNum(td[7]),ypk:getNum(td[8]),donpns:getNum(td[9]),jatdes:getNum(td[10]),suds:getNum(td[11]),satpam:getNum(td[12]),asad:getNum(td[13]),tanah:getNum(td[14]),dapur:getNum(td[15]),sdqremaja:getNum(td[16]),bata:getNum(td[17]),stia:getNum(td[18]),rt:getNum(td[19]),tk:getNum(td[20]),sym:getNum(td[21]),ytm:getNum(td[22]),or_col:getNum(td[23]),danasehat:getNum(td[24]),tpk:getNum(td[25]),updated_at:new Date().toISOString()}); });
-  // Jangan simpan kalau tidak ada data — mencegah hapus data yang belum ter-render
-  if(!rows.length) return;
   try {
     await sbDelete('data_jamaah','kelompok=eq.'+encodeURIComponent(CFG.kelompok)+'&periode=eq.'+encodeURIComponent(getPeriode()));
     await sbUpsert('data_jamaah', rows);
@@ -651,49 +633,48 @@ function downloadLaporanKas(){
   // PENERIMAAN header
   aoa.push(['','PENERIMAAN','','','','']); styles.push([sN,sB,sN,sN,sN,sN]);
 
-  // Nilai dari formula refs buku kas
+  // Baris penerimaan fixed sesuai format laporan
   const frVal=kre(23), shodVal=getNum(document.getElementById('k24')?.querySelectorAll('td')[4]);
-  const infVal=kre(25), infRomVal=kre(26), infJumVal=kre(27);
-  const infLailVal=kre(28), infHariVal=kre(29), warisVal=kre(30), zakatVal=kre(31);
-  const opsVal=getNum(document.getElementById('k32')?.querySelectorAll('td')[4]);
+  const infVal=kre(25), infJumVal=kre(27);
+  // INF Desa = jatdes total dari data jamaah (kolom jY di footer)
+  const infDesaVal=num((document.getElementById('jY')||{textContent:'0'}).textContent);
 
   const penBaris=[
-    {ket:'FR 100%',      val:frVal},
+    {ket:'FR 100%',val:frVal},
     {ket:'Shodaqoh 100%',val:shodVal},
-    {ket:'Infaq',        val:infVal},
-    {ket:'INF Romadhon', val:infRomVal},
-    {ket:"INF Jum'at",   val:infJumVal},
-    {ket:'INF Lailatul Qodar', val:infLailVal},
-    {ket:'INF Hari Raya',val:infHariVal},
-    {ket:'Warisan ROT',  val:warisVal},
-    {ket:'Zakat',        val:zakatVal},
-    {ket:'Hibah',        val:0},
-    {ket:'Laba Usaha/Deviden', val:0},
+    {ket:'Infaq',val:infVal},
+    {ket:"INF Jum'at",val:infJumVal},
+    {ket:'INF Desa',val:infDesaVal},
   ];
   penBaris.forEach(r=>{ aoa.push(['',r.ket,'',r.val||'','','']); styles.push([sN,sN,sN,r.val?sNR:sN,sN,sN]); });
-  // 2 baris kosong penerimaan
-  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
+  // 7 baris kosong penerimaan
+  for(let i=0;i<7;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
 
   // PENGELUARAN header
   aoa.push(['','PENGELUARAN','','','','']); styles.push([sN,sB,sN,sN,sN,sN]);
 
-  const kelBaris=[
-    {ket:'FR 100%',              val:frVal},
-    {ket:'SHODAQOH',             val:shodVal},
-    {ket:'INFAQ',                val:infVal},
-    {ket:'INF Romadhon 3/4',     val:infRomVal},
-    {ket:"INF JUM'AT 2/3",       val:infJumVal},
-    {ket:'INF Lailatul Qodar 2/3',val:infLailVal},
-    {ket:'INF Hari Raya 100%',   val:infHariVal},
-    {ket:'Warisan rod 7/8',      val:warisVal},
-    {ket:'Zakat',                val:zakatVal},
-    {ket:'operasional',          val:opsVal},
-  ];
-  kelBaris.forEach(r=>{ aoa.push(['',r.ket,'','',r.val||'','']); styles.push([sN,sN,sN,sN,r.val?sNR:sN,sN]); });
+  const infRomVal=kre(26), infLailVal=kre(28), infHariVal=kre(29);
+  const warisVal=kre(30), zakatVal=kre(31);
+  const opsVal=getNum(document.getElementById('k32')?.querySelectorAll('td')[4]);
+
+  // FR 100%, SHODAQOH, INFAQ
+  aoa.push(['','FR 100%','','',frVal||'','']); styles.push([sN,sN,sN,sN,frVal?sNR:sN,sN]);
+  aoa.push(['','SHODAQOH','','',shodVal||'','']); styles.push([sN,sN,sN,sN,shodVal?sNR:sN,sN]);
+  aoa.push(['','INFAQ','','',infVal||'','']); styles.push([sN,sN,sN,sN,infVal?sNR:sN,sN]);
+  // 1 baris kosong
+  aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]);
+  // INF JUM'AT 2/3
+  aoa.push(['',"INF JUM'AT 2/3",'','',infJumVal||'','']); styles.push([sN,sN,sN,sN,infJumVal?sNR:sN,sN]);
+  // 2 baris kosong
+  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
+  // operasional
+  aoa.push(['','operasional','','',opsVal||'','']); styles.push([sN,sN,sN,sN,opsVal?sNR:sN,sN]);
+  // 2 baris kosong
+  for(let i=0;i<2;i++){ aoa.push(['','','','','','']); styles.push([sN,sN,sN,sN,sN,sN]); }
 
   // Hitung total
-  const totD=penBaris.reduce((s,r)=>s+(r.val||0),0);
-  const totK=kelBaris.reduce((s,r)=>s+(r.val||0),0);
+  let totD=penBaris.reduce((s,r)=>s+r.val,0);
+  let totK=frVal+shodVal+infVal+infJumVal+opsVal;
   const saldoBulan=totD-totK;
   const saldoAkhir=sAwal+saldoBulan;
 

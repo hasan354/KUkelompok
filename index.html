@@ -457,7 +457,12 @@ function buatBarisJamaah(isKK=false){
 }
 
 const rowJml=document.createElement('tr'); rowJml.className='rt';
-const tjSpan=document.createElement('td'); tjSpan.colSpan=6; tjSpan.textContent='JUMLAH'; rowJml.appendChild(tjSpan);
+// Kolom SETOR — tampilkan total
+const tjSetor=document.createElement('td'); tjSetor.id='jS0'; tjSetor.textContent='0'; rowJml.appendChild(tjSetor);
+// Kolom SISA — kosong
+const tjSisa=document.createElement('td'); tjSisa.textContent=''; rowJml.appendChild(tjSisa);
+// Kolom NO, KK, Anggota, NAMA — label JUMLAH
+const tjSpan=document.createElement('td'); tjSpan.colSpan=4; tjSpan.textContent='JUMLAH'; rowJml.appendChild(tjSpan);
 ['D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','TPK','W','X','Y','Z'].forEach(c=>{ const td=document.createElement('td'); td.id='j'+c; td.textContent='0'; rowJml.appendChild(td); });
 b1.appendChild(rowJml);
 
@@ -485,6 +490,7 @@ function recalc1(){
   });
   'DEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(c=>{ const el=document.getElementById('j'+c); if(el) el.textContent=fmt(totals[c]||0); });
   const jTPK=document.getElementById('jTPK'); if(jTPK) jTPK.textContent=fmt(totals.TPK);
+  const jS0=document.getElementById('jS0'); if(jS0) jS0.textContent=fmt(totals.S0||0);
   recalc2(); recalc3();
 }
 

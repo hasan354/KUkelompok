@@ -696,6 +696,24 @@ async function _fetchPeriode(periode, saldoAkhirKas=0, saldoAkhirLap=0){
       const nilaiMap = {};
       dj.forEach(r=>{ nilaiMap[(r.nama||'').trim().toLowerCase()] = r; });
 
+      // ── Jika periode baru (dj kosong), copy urutan_ku dari periode terakhir ──
+      const adaUrutanKu = dj.some(r=>r.urutan_ku && r.urutan_ku > 0);
+      if(!adaUrutanKu){
+        // Ambil data_jamaah periode lain yang punya urutan_ku
+        const djLainnya = await sbSelect('data_jamaah',
+          'kelompok=eq.'+encodeURIComponent(klp)+
+          '&urutan_ku=gt.0&order=periode.desc,urutan_ku.asc&limit=200');
+        if(djLainnya.length){
+          // Ambil urutan_ku dari periode terbaru yang ada
+          const periodeRef = djLainnya[0].periode;
+          djLainnya.filter(r=>r.periode===periodeRef).forEach(r=>{
+            const key=(r.nama||'').trim().toLowerCase();
+            if(!nilaiMap[key]) nilaiMap[key]={};
+            nilaiMap[key].urutan_ku = r.urutan_ku;
+          });
+        }
+      }
+
       // ── Urutkan: KK dulu, lalu anggotanya langsung di bawah ──
       // Jika urutan_ku sudah ada di data_jamaah, pakai itu untuk urutan KK
       // Jika belum ada, fallback ke urutan dari jamaah master (DB Lama)
@@ -763,11 +781,15 @@ async function _fetchPeriode(periode, saldoAkhirKas=0, saldoAkhirLap=0){
         });
       });
 
-      // Simpan/update data_jamaah agar sinkron (upsert semua baris)
+      // ── Simpan hanya jamaah BARU yang belum ada di data_jamaah ──
+      // JANGAN hapus/overwrite data yang sudah ada — hanya tambah baris baru
       if(djData.length){
         try {
-          await sbDelete('data_jamaah','kelompok=eq.'+encodeURIComponent(klp)+'&periode=eq.'+encodeURIComponent(periode));
-          await sbUpsert('data_jamaah', djData);
+          const namaExisting = new Set(dj.map(r=>(r.nama||'').trim().toLowerCase()));
+          const baruSaja = djData.filter(r=>!namaExisting.has((r.nama||'').trim().toLowerCase()));
+          if(baruSaja.length){
+            await sbUpsert('data_jamaah', baruSaja);
+          }
         } catch(e){ console.warn('Simpan data_jamaah gagal:',e); }
       }
     } else {
@@ -964,10 +986,32 @@ async function loadKelas(){
   renderKelas();
 }
 function terapkanKelasKeData(){
-  const allKeys=KELAS_KOLOM_DEF.map(d=>d.key); const kolomDiatur=new Set(); _kelasList.forEach(k=>{(k.kolom&&k.kolom.length?k.kolom:allKeys).forEach(c=>kolomDiatur.add(c));});
-  document.getElementById('b1').querySelectorAll('tr:not(.rt)').forEach(row=>{ const td=row.querySelectorAll('td'); kolomDiatur.forEach(col=>{const el=td[COLS_IDX[col]]?.querySelector('[contenteditable]');if(el) el.textContent='';}); });
-  const namaToKelas={}; _kelasList.forEach(k=>{(k.anggota||[]).forEach(nama=>{if(!namaToKelas[nama]) namaToKelas[nama]=[]; namaToKelas[nama].push({nominal:k.nominal||0,kolom:k.kolom&&k.kolom.length?k.kolom:allKeys});});});
-  document.getElementById('b1').querySelectorAll('tr:not(.rt)').forEach(row=>{ const td=row.querySelectorAll('td'); const nama=(td[5]?.querySelector('[contenteditable]')?.textContent||'').trim(); if(!nama||!namaToKelas[nama]) return; const setor=getNum(td[0]); namaToKelas[nama].forEach(({nominal,kolom})=>{ const isi=setor>0?nominal:0; kolom.forEach(col=>{const el=td[COLS_IDX[col]]?.querySelector('[contenteditable]');if(el) el.textContent=isi>0?fmt(isi):'';});}); });
+  const allKeys=KELAS_KOLOM_DEF.map(d=>d.key);
+  const namaToKelas={};
+  _kelasList.forEach(k=>{
+    (k.anggota||[]).forEach(nama=>{
+      if(!namaToKelas[nama]) namaToKelas[nama]=[];
+      namaToKelas[nama].push({nominal:k.nominal||0,kolom:k.kolom&&k.kolom.length?k.kolom:allKeys});
+    });
+  });
+  document.getElementById('b1').querySelectorAll('tr:not(.rt)').forEach(row=>{
+    const td=row.querySelectorAll('td');
+    const nama=(td[5]?.querySelector('[contenteditable]')?.textContent||'').trim();
+    if(!nama||!namaToKelas[nama]) return;
+    const setor=getNum(td[0]);
+    namaToKelas[nama].forEach(({nominal,kolom})=>{
+      const isi=setor>0?nominal:0;
+      kolom.forEach(col=>{
+        const el=td[COLS_IDX[col]]?.querySelector('[contenteditable]');
+        if(!el) return;
+        // Hanya isi jika kolom masih kosong/0 — jangan timpa editan manual
+        const nilaiSaatIni=num(el.textContent);
+        if(nilaiSaatIni===0 && el.textContent.trim()===''){
+          el.textContent=isi>0?fmt(isi):'';
+        }
+      });
+    });
+  });
   recalc1();
 }
 

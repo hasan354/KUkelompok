@@ -213,6 +213,8 @@ async function gantiPeriode(arah){
   const saldoAkhirLap = num((document.getElementById('l3sAkh')||{textContent:'0'}).textContent);
   _pd.b+=arah; if(_pd.b>11){_pd.b=0;_pd.t++;} if(_pd.b<0){_pd.b=11;_pd.t--;}
   CFG.periode=getPeriode(); updateLabels();
+  // Simpan periode aktif ke localStorage agar refresh tetap di periode ini
+  localStorage.setItem('ku_periode_aktif', JSON.stringify({b:_pd.b,t:_pd.t}));
   const p=getPeriode();
   if(_cache[p]){
     // Sudah ada di cache, langsung render
@@ -672,7 +674,7 @@ function _renderDariCache(periode){
   const c=_cache[periode]; if(!c) return;
   _applyDJ(c.dj); _applyBK(c.bk); _applyLK(c.lk); _applySA(c.sa);
   pasangFormatter(document.getElementById('t1')); pasangFormatter(document.getElementById('t2')); pasangFormatter(document.getElementById('t3'));
-  recalc1(); terapkanKelasKeData();
+  recalc1();
 }
 
 // ── FETCH & APPLY ────────────────────────────────────────────────
@@ -877,13 +879,13 @@ async function loadAll(){
   updateLabels();
   const p=getPeriode();
   if(_cache[p]){
-    _renderDariCache(p); await loadKelas(); terapkanKelasKeData(); _loading=false;
+    _renderDariCache(p); await loadKelas(); _loading=false;
     return;
   }
   showLoading('Memuat data...');
   try { await _fetchPeriode(p); } catch(e){ showStatus('Error load: '+e.message,'#c0392b'); }
   pasangFormatter(document.getElementById('t1')); pasangFormatter(document.getElementById('t2')); pasangFormatter(document.getElementById('t3'));
-  recalc1(); hideLoading(); await loadKelas(); terapkanKelasKeData(); _loading=false;
+  recalc1(); hideLoading(); await loadKelas(); _loading=false;
 }
 
 // ── SYNC JAMAAH DARI DB LAMA ─────────────────────────────────────
@@ -899,7 +901,6 @@ async function sinkronJamaah(silent=false){
     pasangFormatter(document.getElementById('t1'));
     recalc1();
     await loadKelas();
-    terapkanKelasKeData();
     if(!silent) showStatus('✅ Sinkronisasi selesai','#2e7d5a');
   } catch(e){
     if(!silent) showStatus('Sync gagal: '+e.message,'#c0392b');
@@ -926,6 +927,13 @@ async function init(){
   try {
     const all=await sbSelect('setting','order=id.desc&limit=1');
     if(all.length){ const s=all[0]; if(s.kelompok){CFG.kelompok=s.kelompok;document.getElementById('cfg-kelompok').value=s.kelompok;} if(s.bulan){_pd.b=BULAN.indexOf(s.bulan);document.getElementById('cfg-bulan').value=s.bulan;} if(s.tahun){_pd.t=parseInt(s.tahun)||2025;document.getElementById('cfg-tahun').value=s.tahun;} }
+  } catch(e){}
+  // Override dengan periode aktif dari localStorage (hasil gantiPeriode terakhir)
+  try {
+    const saved=JSON.parse(localStorage.getItem('ku_periode_aktif')||'null');
+    if(saved && typeof saved.b==='number' && typeof saved.t==='number'){
+      _pd.b=saved.b; _pd.t=saved.t;
+    }
   } catch(e){}
   updateLabels(); loadAll();
 }
@@ -985,7 +993,7 @@ async function loadKelas(){
   } catch(e){}
   renderKelas();
 }
-function terapkanKelasKeData(){
+function terapkanKelasKeData(hanyaKosong=true){
   const allKeys=KELAS_KOLOM_DEF.map(d=>d.key);
   const namaToKelas={};
   _kelasList.forEach(k=>{
@@ -1004,11 +1012,12 @@ function terapkanKelasKeData(){
       kolom.forEach(col=>{
         const el=td[COLS_IDX[col]]?.querySelector('[contenteditable]');
         if(!el) return;
-        // Hanya isi jika kolom masih kosong/0 — jangan timpa editan manual
-        const nilaiSaatIni=num(el.textContent);
-        if(nilaiSaatIni===0 && el.textContent.trim()===''){
-          el.textContent=isi>0?fmt(isi):'';
+        if(hanyaKosong){
+          // Hanya isi jika kolom benar-benar kosong (belum pernah diisi)
+          const nilaiSaatIni=num(el.textContent);
+          if(nilaiSaatIni!==0 || el.textContent.trim()!=='') return;
         }
+        el.textContent=isi>0?fmt(isi):'';
       });
     });
   });
